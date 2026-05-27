@@ -15,16 +15,25 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# 2. Check and provision pipx if missing (Resolves PEP 668 Externally Managed Environment issues)
+# 2. Check and provision pipx if missing
 if ! command -v pipx &> /dev/null; then
     echo -e "${YELLOW}⚠️ pipx not found. Attempting to install pipx safely via system package manager...${NC}"
     
     if command -v brew &> /dev/null; then
-        echo -e "${GREEN}🍺 macOS/Homebrew detected. Installing pipx via Homebrew...${NC}"
+        echo -e "${GREEN}🍺 macOS/Homebrew detected. Installing pipx...${NC}"
         brew install pipx
     elif command -v apt-get &> /dev/null; then
-        echo -e "${GREEN}🐧 Debian/Ubuntu detected. Installing pipx via apt...${NC}"
+        echo -e "${GREEN}🐧 Debian/Ubuntu detected. Installing pipx...${NC}"
         sudo apt-get update && sudo apt-get install -y pipx
+    elif command -v dnf &> /dev/null; then
+        echo -e "${GREEN}🎩 Fedora/Amazon Linux 2023 detected. Installing pipx...${NC}"
+        sudo dnf install -y pipx
+    elif command -v yum &> /dev/null; then
+        echo -e "${GREEN}🟡 CentOS/Amazon Linux 2 detected. Installing pipx...${NC}"
+        sudo yum install -y pipx
+    elif command -v pacman &> /dev/null; then
+        echo -e "${GREEN}🔵 Arch Linux detected. Installing pipx...${NC}"
+        sudo pacman -S --noconfirm pipx
     else
         echo -e "${RED}❌ Error: pipx is missing and could not be auto-installed.${NC}" >&2
         echo -e "Please install 'pipx' manually for your OS, then re-run this script." >&2
