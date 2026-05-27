@@ -17,26 +17,36 @@ fi
 
 # 2. Check and provision pipx if missing
 if ! command -v pipx &> /dev/null; then
-    echo -e "${YELLOW}⚠️ pipx not found. Attempting to install pipx safely via system package manager...${NC}"
+    echo -e "${YELLOW}⚠️ pipx not found. Attempting to install pipx safely...${NC}"
     
+    # Try system package managers first, but safely check if the package actually exists
     if command -v brew &> /dev/null; then
         echo -e "${GREEN}🍺 macOS/Homebrew detected. Installing pipx...${NC}"
         brew install pipx
     elif command -v apt-get &> /dev/null; then
         echo -e "${GREEN}🐧 Debian/Ubuntu detected. Installing pipx...${NC}"
         sudo apt-get update && sudo apt-get install -y pipx
-    elif command -v dnf &> /dev/null; then
-        echo -e "${GREEN}🎩 Fedora/Amazon Linux 2023 detected. Installing pipx...${NC}"
+    elif command -v dnf &> /dev/null && sudo dnf info pipx &> /dev/null; then
+        echo -e "${GREEN}🎩 Fedora/RHEL detected. Installing pipx...${NC}"
         sudo dnf install -y pipx
-    elif command -v yum &> /dev/null; then
-        echo -e "${GREEN}🟡 CentOS/Amazon Linux 2 detected. Installing pipx...${NC}"
-        sudo yum install -y pipx
     elif command -v pacman &> /dev/null; then
         echo -e "${GREEN}🔵 Arch Linux detected. Installing pipx...${NC}"
         sudo pacman -S --noconfirm pipx
     else
-        echo -e "${RED}❌ Error: pipx is missing and could not be auto-installed.${NC}" >&2
-        echo -e "Please install 'pipx' manually for your OS, then re-run this script." >&2
+        # The Universal PEP-668 Fallback (Perfect for Amazon Linux 2023 and custom distros)
+        echo -e "${YELLOW}⚠️ Package not found in OS manager. Bootstrapping pipx via isolated Python venv...${NC}"
+        python3 -m venv ~/.local/share/pipx-venv
+        ~/.local/share/pipx-venv/bin/pip install pipx
+        mkdir -p ~/.local/bin
+        ln -sf ~/.local/share/pipx-venv/bin/pipx ~/.local/bin/pipx
+        
+        # Inject it into the current script's PATH so the next steps don't fail
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    
+    # Final sanity check
+    if ! command -v pipx &> /dev/null; then
+        echo -e "${RED}❌ Error: pipx installation failed. Please install pipx manually.${NC}" >&2
         exit 1
     fi
 fi
