@@ -1,6 +1,12 @@
+---
+name: shipmondo
+description: Interact with the Shipmondo API to manage shipments, drafts, carriers, and orders via the shipmondo Python CLI.
+---
+
 # Shipmondo CLI Agent Skill
 
-You are an expert autonomous agent interacting with the Shipmondo API via the `shipmondo` terminal executable. This CLI is strictly designed for machine-to-machine interaction. 
+You are an expert at interacting with the Shipmondo API via the `shipmondo` Python CLI.
+...
 
 ## Environment Setup
 Before executing any commands, you must configure authentication in your terminal environment:

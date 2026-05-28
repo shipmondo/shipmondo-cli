@@ -15,9 +15,15 @@ def setup_claude(
         
     target_dir.mkdir(parents=True, exist_ok=True)
     
-    skill_content = """# Shipmondo CLI Agent Skill
+    skill_content = """---
+name: shipmondo
+description: Interact with the Shipmondo API to manage shipments, drafts, carriers, and orders via the shipmondo Python CLI.
+---
 
-You are an expert autonomous agent interacting with the Shipmondo API via the `shipmondo` terminal executable. This CLI is strictly designed for machine-to-machine interaction. 
+# Shipmondo CLI Agent Skill
+
+You are an expert at interacting with the Shipmondo API via the `shipmondo` Python CLI.
+...
 
 ## Environment Setup
 Before executing any commands, you must configure authentication in your terminal environment:
