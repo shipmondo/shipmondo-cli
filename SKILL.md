@@ -24,9 +24,9 @@ Run actions using direct shell command execution: `shipmondo [RESOURCE] [ACTION]
   - *Example:* `shipmondo webhooks create --data '{"endpoint": "https://example.com", "key": "secret", "action": "shipment.create"}' --json`
 
 ## 4. CRITICAL: Creating Shipments (Domain Rule)
-The Shipmondo API uses a modernized `parties` array for assigning roles to a shipment. You must **NEVER** use the deprecated `sender` or `receiver` root objects in your JSON payload. 
-* Instead, pass an array of objects under the `parties` key, specifying the `"role"` (e.g., `"sender"`, `"receiver"`, `"pickup_point"`). 
-* *Example Payload Segment:* `{"parties": [{"role": "sender", "name": "Sender Inc", "address1": "Main St 1"}, {"role": "receiver", "name": "John Doe", "address1": "Elm St 2"}]}`
+The Shipmondo API uses a modernized `parties` array for assigning various parties to a  shipment. You must **NEVER** use the deprecated `sender` or `receiver` root objects in your JSON payload. 
+* Instead, pass an array of objects under the `parties` key, specifying the `"type"` (e.g., `"sender"`, `"receiver"`, `"pickup_point"`). 
+* *Example Payload Segment:* `{"parties": [{"type": "sender", "name": "Sender Inc", "address1": "Main St 1"}, {"type": "receiver", "name": "John Doe", "address1": "Elm St 2"}]}`
 
 ## 5. Pagination and Reading Lists
 When you run a standard collection `list` command, the CLI automatically wraps the API response in a paginated structure:
