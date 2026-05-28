@@ -51,3 +51,30 @@ Shipmondo payloads can be massive. If you only need specific fields (like findin
 ## 7. Error Handling & Debugging
 * **Validation Errors:** If you miss a required parameter or pass an invalid payload, the CLI will terminate with an exit code of `1` and output a JSON error to standard error (`stderr`). Read this error carefully to self-correct your payload.
 * **Network Debugging:** If you suspect an API mismatch, append the `--debug` flag to your command. This will print the raw outgoing HTTP request (URL, Headers, JSON) and the raw incoming HTTP response directly to `stderr` for your inspection.
+
+## 8. Carrier & Product Discovery Flow
+
+When assisting a user with a booking, you must determine the correct `product_code` (and optional services). 
+* **Hierarchy:** A Carrier has many Products. A Product has many Services.
+* **Booking Rule:** You only need to submit the `product_code` (the API automatically infers the carrier). Adding services might require extra payload fields; if you miss any, the API will return a descriptive error. Follow the API's error instructions to correct the payload.
+
+### Discovery Protocol
+Before drafting a shipment payload, check if the user already knows their `product_code`. 
+* **IF YES:** Proceed directly to the booking phase.
+* **IF NO:** Execute the following discovery steps.
+
+**Step 1: Identify the Routing**
+Ask the user for the sender and receiver country codes if they haven't provided them. 
+
+**Step 2: Fetch Available Carriers**
+Run the carrier list command using the routing parameters:
+`shipmondo carriers list --sender-country-code <sender_country_code> --receiver-country-code <receiver_country_code>`
+Present the available carriers to the user and ask which one they prefer.
+
+**Step 3: Fetch Carrier Products (WARNING: VERBOSE OUTPUT)**  
+Once you have the `carrier_code` from Step 2, fetch the products. 
+*CRITICAL:* The products endpoint returns massive amounts of JSON. You must pipe the output through `jq` to extract only the `code` and `name` to prevent context window overflow.
+Example:
+`shipmondo products list --carrier-code gls | jq '[.[] | {code: .code, name: .name}]'`
+
+Present this filtered list to the user to make their final selection before building the shipment payload.
