@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import sys
 from collections import defaultdict
 
 def resolve_schema(schema_obj, spec, seen_refs=None):
@@ -245,6 +246,8 @@ from pathlib import Path
 
 app = typer.Typer(help="CLI setup and integrations")
 
+skill_content = """{skill_markdown}"""
+
 @app.command("claude")
 def setup_claude(
     global_install: bool = typer.Option(True, "--global/--local", help="Install globally or for this directory only")
@@ -257,13 +260,77 @@ def setup_claude(
         
     target_dir.mkdir(parents=True, exist_ok=True)
     
-    skill_content = """{skill_markdown}"""
-    
     skill_file = target_dir / "SKILL.md"
     skill_file.write_text(skill_content.strip())
         
     typer.echo(f"✅ Shipmondo skill successfully installed to: {{skill_file}}")
     typer.echo("Claude Code will automatically load these instructions when invoked.")
+
+@app.command("cursor")
+def setup_cursor():
+    """Install Shipmondo AI rules for Cursor IDE in the current directory."""
+    target_file = Path.cwd() / ".cursorrules"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\\n\\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {{target_file}}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {{target_file}}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {{target_file}} with Shipmondo rules")
+        
+@app.command("windsurf")
+def setup_windsurf():
+    """Install Shipmondo AI rules for Windsurf IDE in the current directory."""
+    target_file = Path.cwd() / ".windsurfrules"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\\n\\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {{target_file}}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {{target_file}}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {{target_file}} with Shipmondo rules")
+
+@app.command("copilot")
+def setup_copilot():
+    """Install Shipmondo AI rules for GitHub Copilot (VS Code) in the current workspace."""
+    github_dir = Path.cwd() / ".github"
+    github_dir.mkdir(exist_ok=True)
+    target_file = github_dir / "copilot-instructions.md"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\\n\\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {{target_file}}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {{target_file}}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {{target_file}} with Shipmondo rules")
+
+@app.command("export")
+def setup_export():
+    """Export the standard-compliant Agent Skill folder to the current directory."""
+    target_dir = Path.cwd() / "shipmondo"
+    target_file = target_dir / "SKILL.md"
+    
+    if target_file.exists():
+        typer.echo("ℹ️ The shipmondo/SKILL.md file already exists in this directory.", err=True)
+        raise typer.Exit(0)
+        
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_file.write_text(skill_content.strip())
+    
+    typer.echo(f"✅ Exported standard Agent Skill folder to: {{target_dir}}/")
+    typer.echo("This folder is now ready to be dropped into any Agent Skills-compatible workflow.")
 '''
     with open("shipmondo/commands/setup.py", "w", encoding="utf-8") as f:
         f.write(setup_code)
@@ -288,7 +355,7 @@ def setup_claude(
         f.write('    """Updates the Shipmondo CLI to the latest version from GitHub."""\n')
         f.write('    print("🔄 Pulling the latest version from GitHub...")\n')
         f.write('    try:\n')
-        f.write('        subprocess.run(["pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)\n')
+        f.write('        subprocess.run([sys.executable, "-m", "pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)\n')
         f.write('        print("✅ Shipmondo CLI successfully updated!")\n')
         f.write('    except subprocess.CalledProcessError as e:\n')
         f.write('        print(f"❌ Failed to update. Pipx error:\\n{e.stderr}", file=sys.stderr)\n')

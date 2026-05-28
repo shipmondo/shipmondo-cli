@@ -3,19 +3,7 @@ from pathlib import Path
 
 app = typer.Typer(help="CLI setup and integrations")
 
-@app.command("claude")
-def setup_claude(
-    global_install: bool = typer.Option(True, "--global/--local", help="Install globally or for this directory only")
-):
-    """Install the Shipmondo skill into Claude Code."""
-    if global_install:
-        target_dir = Path.home() / ".claude" / "skills" / "shipmondo"
-    else:
-        target_dir = Path.cwd() / ".claude" / "skills" / "shipmondo"
-        
-    target_dir.mkdir(parents=True, exist_ok=True)
-    
-    skill_content = """---
+skill_content = """---
 name: shipmondo
 description: Interact with the Shipmondo API to manage shipments, drafts, carriers, and orders via the shipmondo Python CLI.
 ---
@@ -122,9 +110,87 @@ When a user asks to "see", "view" or "open" a shipping label, commercial invoice
 
 Example:
 `shipmondo labels get 12345 --open-pdf`"""
+
+@app.command("claude")
+def setup_claude(
+    global_install: bool = typer.Option(True, "--global/--local", help="Install globally or for this directory only")
+):
+    """Install the Shipmondo skill into Claude Code."""
+    if global_install:
+        target_dir = Path.home() / ".claude" / "skills" / "shipmondo"
+    else:
+        target_dir = Path.cwd() / ".claude" / "skills" / "shipmondo"
+        
+    target_dir.mkdir(parents=True, exist_ok=True)
     
     skill_file = target_dir / "SKILL.md"
     skill_file.write_text(skill_content.strip())
         
     typer.echo(f"✅ Shipmondo skill successfully installed to: {skill_file}")
     typer.echo("Claude Code will automatically load these instructions when invoked.")
+
+@app.command("cursor")
+def setup_cursor():
+    """Install Shipmondo AI rules for Cursor IDE in the current directory."""
+    target_file = Path.cwd() / ".cursorrules"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\n\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {target_file}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {target_file}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {target_file} with Shipmondo rules")
+        
+@app.command("windsurf")
+def setup_windsurf():
+    """Install Shipmondo AI rules for Windsurf IDE in the current directory."""
+    target_file = Path.cwd() / ".windsurfrules"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\n\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {target_file}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {target_file}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {target_file} with Shipmondo rules")
+
+@app.command("copilot")
+def setup_copilot():
+    """Install Shipmondo AI rules for GitHub Copilot (VS Code) in the current workspace."""
+    github_dir = Path.cwd() / ".github"
+    github_dir.mkdir(exist_ok=True)
+    target_file = github_dir / "copilot-instructions.md"
+    
+    if target_file.exists():
+        existing = target_file.read_text()
+        if "name: shipmondo" not in existing:
+            target_file.write_text(existing + "\n\n" + skill_content.strip())
+            typer.echo(f"✅ Appended Shipmondo rules to your existing {target_file}")
+        else:
+            typer.echo(f"ℹ️ Shipmondo rules already exist in {target_file}")
+    else:
+        target_file.write_text(skill_content.strip())
+        typer.echo(f"✅ Created new {target_file} with Shipmondo rules")
+
+@app.command("export")
+def setup_export():
+    """Export the standard-compliant Agent Skill folder to the current directory."""
+    target_dir = Path.cwd() / "shipmondo"
+    target_file = target_dir / "SKILL.md"
+    
+    if target_file.exists():
+        typer.echo("ℹ️ The shipmondo/SKILL.md file already exists in this directory.", err=True)
+        raise typer.Exit(0)
+        
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_file.write_text(skill_content.strip())
+    
+    typer.echo(f"✅ Exported standard Agent Skill folder to: {target_dir}/")
+    typer.echo("This folder is now ready to be dropped into any Agent Skills-compatible workflow.")
