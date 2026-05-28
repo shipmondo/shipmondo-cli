@@ -19,21 +19,21 @@ def setup_claude(
 
 You are an expert autonomous agent interacting with the Shipmondo API via the `shipmondo` terminal executable. This CLI is strictly designed for machine-to-machine interaction. 
 
-## 1. Environment Setup
+## Environment Setup
 Before executing any commands, you must configure authentication in your terminal environment:
 ```bash
 export SHIPMONDO_API_USER="your_user"
 export SHIPMONDO_API_KEY="your_key"
 ```
 
-## 2. Self-Discovery & Introspection (CRITICAL)
+## Self-Discovery & Introspection (CRITICAL)
 You do not need to guess parameters, endpoints, or schemas. The CLI is entirely self-describing. When you are unsure how to perform an action, follow this discovery loop:
 1. **List all available commands:** Run `shipmondo commands --json` to get a catalog of every available resource and action.
 2. **Inspect a specific command:** Run `shipmondo [RESOURCE] [ACTION] --help-json` to view the exact machine-readable schema for that command. 
    - *Example:* `shipmondo carriers list --help-json`
    - This output will explicitly define all required positional arguments, explicit CLI flags (like `--receiver-country-code`), and the exact JSON payload schema required for the `--data` flag.
 
-## 3. Core Execution Syntax
+## Core Execution Syntax
 Run actions using direct shell command execution: `shipmondo [RESOURCE] [ACTION] [OPTIONS]`
 * **Always use JSON**: Append the `--json` flag to every command to ensure you receive raw data instead of human-readable text.
 * **Query & Path Parameters**: Simple parameters are mapped to explicit kebab-case CLI flags. (e.g., `--page 1`, `--receiver-country-code DK`). Do not pass these inside the JSON payload.
@@ -61,15 +61,15 @@ When you run a standard collection `list` command, the CLI automatically wraps t
 * **Use Pagination Flags:** Control your context window by using the `--page` and `--per-page` flags. Never exceed `--per-page 50`.
 * **Traversing:** Check `meta.total_pages` to determine if you need to execute the command again with a higher `--page` number.
 
-## 6. Token Efficiency
+## Token Efficiency
 Shipmondo payloads can be massive. If you only need specific fields (like finding a specific ID or status), pipe the output through `jq` to filter the data before reading it into your context window.
 * *Example:* `shipmondo sales_orders list --json | jq '.data[].id'`
 
-## 7. Error Handling & Debugging
+## Error Handling & Debugging
 * **Validation Errors:** If you miss a required parameter or pass an invalid payload, the CLI will terminate with an exit code of `1` and output a JSON error to standard error (`stderr`). Read this error carefully to self-correct your payload.
 * **Network Debugging:** If you suspect an API mismatch, append the `--debug` flag to your command. This will print the raw outgoing HTTP request (URL, Headers, JSON) and the raw incoming HTTP response directly to `stderr` for your inspection.
 
-## 8. Carrier & Product Discovery Flow
+## Carrier & Product Discovery Flow
 
 When assisting a user with a booking, you must determine the correct `product_code` (and optional services). 
 * **Hierarchy:** A Carrier has many Products. A Product has many Services.
@@ -94,7 +94,28 @@ Once you have the `carrier_code` from Step 2, fetch the products.
 Example:
 `shipmondo products list --carrier-code gls | jq '[.[] | {code: .code, name: .name}]'`
 
-Present this filtered list to the user to make their final selection before building the shipment payload."""
+Present this filtered list to the user to make their final selection before building the shipment payload.
+
+## Resource Mapping & Guardrails
+
+To prevent semantic confusion, map user-facing business terminology to the precise CLI resource domains below.
+
+### Drafts vs. Orders vs. Templates
+Users may use overlapping terms when discussing shipments, orders, or templates. You must route their requests to the correct subsystem:
+
+* **Shipment Drafts:** When a user asks for "drafts" or "shipment drafts", interact strictly with the `shipmondo shipment_drafts` namespace.
+* **Sales Orders:** When a user asks about "orders", "sales orders", or "customer orders", interact strictly with the `shipmondo sales_orders` namespace.
+* **Shipment Templates (CRITICAL GUARDRAIL):** The `shipmondo shipment_templates` namespace is reserved for high-level administration of shipping presets. Messing with templates can heavily disrupt automated fulfillment logic. **You must NEVER create, modify, or delete shipment templates.** If a user requests a template modification, politely explain that they must manage templates manually through the Shipmondo Web Dashboard for safety reasons.
+
+### File & Label Presentation
+When a user asks to "see", "view" or "open" a shipping label, commercial invoice, or tracking document, do not just return the raw text or base64 JSON payload. 
+
+* Use the global `--open-pdf` flag on the fetching command. 
+* This tells the CLI engine to automatically intercept the base64 string, write it to a local temporary file, and trigger the system's native PDF viewer for the human user immediately.
+* If this approach fails, try to manually decode the base64 string and write it to a file, then open it with a system command.
+
+Example:
+`shipmondo labels get 12345 --open-pdf`"""
     
     skill_file = target_dir / "SKILL.md"
     skill_file.write_text(skill_content.strip())
