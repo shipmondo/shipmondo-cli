@@ -41,7 +41,7 @@ def update_cli():
     """Updates the Shipmondo CLI to the latest version from GitHub."""
     print("🔄 Pulling the latest version from GitHub...")
     try:
-        subprocess.run([sys.executable, "-m", "pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)
+        subprocess.run(["pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)
         print("✅ Shipmondo CLI successfully updated!")
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to update. Pipx error:\n{e.stderr}", file=sys.stderr)

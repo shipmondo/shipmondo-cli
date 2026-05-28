@@ -347,7 +347,7 @@ def setup_export():
         f.write('    """Updates the Shipmondo CLI to the latest version from GitHub."""\n')
         f.write('    print("🔄 Pulling the latest version from GitHub...")\n')
         f.write('    try:\n')
-        f.write('        subprocess.run([sys.executable, "-m", "pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)\n')
+        f.write('        subprocess.run(["pipx", "install", "git+https://github.com/shipmondo/shipmondo-cli.git", "--force"], check=True, capture_output=True, text=True)\n')
         f.write('        print("✅ Shipmondo CLI successfully updated!")\n')
         f.write('    except subprocess.CalledProcessError as e:\n')
         f.write('        print(f"❌ Failed to update. Pipx error:\\n{e.stderr}", file=sys.stderr)\n')
