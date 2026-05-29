@@ -105,3 +105,50 @@ When a user asks to "see", "view" or "open" a shipping label, commercial invoice
 
 Example:
 `shipmondo labels get 12345 --open-pdf`
+
+## Service Points
+When a shipment requires delivery to a service point (drop point/parcel shop), it must be defined correctly within the parties array.
+* **The Correct Type:** You MUST use `"type": "service_point"`. 
+
+**Correct Example:**
+```json
+{
+  "parties": [
+    {
+      "type": "service_point",
+      "service_point_id": "9743"
+    }
+  ]
+}
+
+```
+
+## Service Point vs. Pickup (CRITICAL DISTINCTION)
+You must understand the strict difference between a **Service Point** and a **Pickup** in the Shipmondo ecosystem. Do not confuse or combine these terms.
+
+* **Service Point (Drop Point / Parcel Shop):** 
+  * This is a location (drop point/parcel shop) where the *receiver* goes to collect their parcel, or where the *sender* goes to drop it off.
+  * **Implementation:** This is defined inside the `parties` array using `"type": "service_point"`.
+
+* **Pickup (Carrier Collection):** 
+  * This is when the *carrier* is requested to drive to the *sender's address* to collect the parcels directly.
+
+### The `quotes create` Exception
+While the majority of Shipmondo booking endpoints (like shipment drafts and sales orders) require you to pass addresses via the `parties` array, the **Quotes** endpoint is a strict exception.
+
+* When executing `shipmondo quotes create`, you **MUST NOT** use the `parties` array.
+* You must use the traditional `sender` and `receiver` objects directly at the root level of the payload.
+
+**Correct Quotes Example:**
+
+```json
+{
+  "sender": {
+    "country_code": "DK",
+    "zipcode": "5000"
+  },
+  "receiver": {
+    "country_code": "DK",
+    "zipcode": "8000"
+  }
+}
