@@ -38,25 +38,32 @@ export SHIPMONDO_API_KEY="your_api_key"
 
 ---
 
-## 🤖 AI Agent Integration (Claude Code)
+Here is the updated section for your `README.md`. It broadens the scope to reflect the universal agent support and organizes the commands clearly for the user.
 
-This CLI is natively designed to be operated by autonomous AI agents like Anthropic's Claude Code. We provide a built-in command that automatically injects the Shipmondo API schemas, routing rules, and execution context directly into Claude's memory.
+## 🤖 AI Agent Integration
 
-To install the Shipmondo skill into your current directory, run:
+This CLI is natively designed to be operated by autonomous AI agents. We provide built-in commands that automatically inject the Shipmondo API schemas, routing rules, and execution context directly into your favorite AI coding assistant or agent framework using the open Agent Skills standard.
+
+### Supported Agents & IDEs
+
+Run the setup command for your preferred tool to install the Shipmondo skill into your current workspace:
+
+* **Claude Code:** `shipmondo setup claude`
+* **GitHub Copilot (VS Code):** `shipmondo setup copilot`
+* **Cursor IDE:** `shipmondo setup cursor`
+* **Windsurf IDE:** `shipmondo setup windsurf`
+
+### Generic Export (Other AI Tools)
+
+If you are building a custom agent or using an AI not listed above, you can export the standard-compliant Agent Skill folder directly to your current directory:
 
 ```bash
-shipmondo setup claude
+shipmondo setup export
 
 ```
 
-To install it globally so Claude can manage your Shipmondo account from any folder on your machine, use the global flag:
+This will generate a `./shipmondo` folder containing the `SKILL.md` instructions, ready to be dropped into any Agent Skills-compatible workflow.
 
-```bash
-shipmondo setup claude --global
-
-```
-
-Once installed, simply launch Claude Code and prompt it naturally. For example: *"Fetch my latest Shipmondo orders,"* or *"Create a shipping label for order 12345."* Claude will autonomously discover the endpoints, format the JSON payloads, and execute the CLI commands on your behalf.
 
 ## Global Flags
 
