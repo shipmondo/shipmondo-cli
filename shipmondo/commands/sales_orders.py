@@ -341,6 +341,15 @@ def create_cmd(
             "example": "12345678",
             "description": "Landline phone number of the receiver"
           },
+          "vat_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "DK12345678",
+            "description": "VAT ID of the receiver",
+            "nullable": true
+          },
           "instruction": {
             "type": "string",
             "example": "Place on the front porch.",
@@ -408,6 +417,15 @@ def create_cmd(
             "type": "string",
             "example": "12345678",
             "description": "Landline phone number of the receiver"
+          },
+          "vat_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "DK12345678",
+            "description": "VAT ID of the receiver",
+            "nullable": true
           }
         }
       },
@@ -915,6 +933,15 @@ def update_cmd(
             "example": "12345678",
             "description": "Landline phone number of the receiver"
           },
+          "vat_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "DK12345678",
+            "description": "VAT ID of the receiver",
+            "nullable": true
+          },
           "instruction": {
             "type": "string",
             "example": "Place on the front porch.",
@@ -982,6 +1009,15 @@ def update_cmd(
             "type": "string",
             "example": "12345678",
             "description": "Landline phone number of the receiver"
+          },
+          "vat_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "DK12345678",
+            "description": "VAT ID of the receiver",
+            "nullable": true
           }
         }
       },
@@ -1137,6 +1173,14 @@ def update_cmd(
             "example": "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx",
             "description": "The availability token for Instabox."
           }
+        }
+      },
+      "tags": {
+        "type": "array",
+        "description": "Custom tags for the order. Tags can be used to filter and search for orders.",
+        "items": {
+          "type": "string",
+          "example": "tag1"
         }
       }
     }

@@ -1247,9 +1247,19 @@ def create_cmd(
               "type": "object",
               "properties": {
                 "quantity": {
-                  "type": "integer",
-                  "description": "Quantity of the good in the shipment.",
-                  "example": 2
+                  "type": "number",
+                  "example": 2.0,
+                  "description": "Quantity of the goods in the `unit`. Example: 2.0 pieces or 0.5 m2."
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "piece",
+                    "m2"
+                  ],
+                  "default": "piece",
+                  "description": "Unit of the `quantity`.",
+                  "example": "piece"
                 },
                 "country_code": {
                   "type": "string",
@@ -2669,9 +2679,19 @@ def quote_cmd(
               "type": "object",
               "properties": {
                 "quantity": {
-                  "type": "integer",
-                  "description": "Quantity of the good in the shipment.",
-                  "example": 2
+                  "type": "number",
+                  "example": 2.0,
+                  "description": "Quantity of the goods in the `unit`. Example: 2.0 pieces or 0.5 m2."
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "piece",
+                    "m2"
+                  ],
+                  "default": "piece",
+                  "description": "Unit of the `quantity`.",
+                  "example": "piece"
                 },
                 "country_code": {
                   "type": "string",

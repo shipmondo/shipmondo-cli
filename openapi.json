@@ -4615,7 +4615,7 @@
         "description": "Carrier code to be included in the filter.",
         "schema": {
           "type": "string",
-          "enum": ["airmee","alpi","asendia","best","bft","bhs_logistics","bws","bpost","bring","brink","budbee","burd","cm_transport","collicare","dachser","dansk_distribution_brabrand","dansk_distribution","dansk_distribution_taulov","dfm","dao","db_schenker","deutsche_post","dhl_express","dhl_freight_se","dhl_parcel","dpd","dsv_parcel","dsv","dsv_xpress","early_bird","esbjerg_gods","esbjerg_gods_sjaelland","fed_ex","freja","geodis","gls","gls_de","gordon","helthjem","instabox","interfjord","jetpak","jetpak_se","jjd","joervi_transport","kht","leman","lgt_logistics","link_logistics","b2c_europe","mover","nonbo_fragt","packeta","posti","city_mail","post_nl","pdk","post_nord","sand_distribution","sdl","simptra","tjw","tnt","ups","webrinq","xpressen","unspecified"]
+          "enum": ["airmee","alpi","asendia","best","bft","bhs_logistics","bws","bpost","bring","brink","budbee","burd","city_mail","cm_transport","collicare","dachser","dansk_distribution_brabrand","dansk_distribution","dansk_distribution_taulov","dfm","dao","db_schenker","deutsche_post","dhl_express","dhl_freight_se","dhl_parcel","dpd","dsv_parcel","dsv","dsv_xpress","early_bird","esbjerg_gods","esbjerg_gods_sjaelland","fed_ex","freja","geodis","gls","gls_de","gordon","helthjem","instabox","interfjord","jetpak","jetpak_se","jjd","joervi_transport","kht","leman","lgt_logistics","link_logistics","b2c_europe","mover","nonbo_fragt","packeta","posti","post_nl","pdk","post_nord","sand_distribution","sdl","simptra","tjw","tnt","ups","webrinq","xpressen","unspecified"]
         }
       },
       {
@@ -7064,9 +7064,11 @@
     "type": "object",
     "properties": {
       "quantity": {
-        "type": "integer",
-        "example": 2
+        "type": "number",
+        "example": 2.0,
+        "description": "Quantity of the goods in the `unit`. Example: 2.0 pieces or 0.5 m2."
       },
+
       "country": {
         "type": "string",
         "description": "Country of origin",
@@ -7980,9 +7982,19 @@
     "type": "object",
     "properties": {
       "quantity": {
-        "type": "integer",
-        "description": "Quantity of the good in the shipment.",
-        "example": 2
+        "type": "number",
+        "example": 2.0,
+        "description": "Quantity of the goods in the `unit`. Example: 2.0 pieces or 0.5 m2."
+      },
+      "unit": {
+        "type": "string",
+        "enum": [
+          "piece",
+          "m2"
+        ],
+        "default": "piece",
+        "description": "Unit of the `quantity`.",
+        "example": "piece"
       },
       "country_code": {
         "type": "string",
@@ -8464,6 +8476,7 @@
   },
   "Item": {
     "type": "object",
+    "required": ["id", "country_attributes"],
     "properties": {
       "id": {
         "type": "integer",
@@ -8518,7 +8531,7 @@
       "customs_commodity_code": {
         "type": "string",
         "example": "123456",
-        "description": "Tariff code for the item. Used when creating shipments that require customs declaration."
+        "description": "Global tariff code for the item. Used when creating shipments that require customs declaration."
       },
       "customs_description": {
         "type": "string",
@@ -8534,6 +8547,29 @@
         "type": "boolean",
         "default": false,
         "description": "Describes if the item is a virtual item."
+      },
+      "country_attributes": {
+        "type": "array",
+        "description": "Country specific attributes.",
+        "nullable": false,
+        "items": {
+          "type": "object",
+          "required": ["country_code", "customs_commodity_code"],
+          "properties": {
+            "country_code": {
+              "type": "string",
+              "description": "ISO 3166-1 alpha-2 country code.",
+              "example": "DK",
+              "nullable": false
+            },
+            "customs_commodity_code": {
+              "type": ["string", "null"],
+              "description": "Country specific tariff code for the item. Used when creating shipments that require customs declaration to the specified country.",
+              "example": "3924102000",
+              "nullable": true
+            }
+          }
+        }
       }
     }
   },
@@ -8592,7 +8628,7 @@
       "customs_commodity_code": {
         "type": "string",
         "example": "123456",
-        "description": "Tariff code for the item. Used when creating shipments that require customs declaration."
+        "description": "Global tariff code for the item. Used when creating shipments that require customs declaration."
       },
       "customs_description": {
         "type": "string",
@@ -8657,7 +8693,7 @@
       "customs_commodity_code": {
         "type": "string",
         "example": "123456",
-        "description": "Tariff code for the item. Used when creating shipments that require customs declaration."
+        "description": "Global tariff code for the item. Used when creating shipments that require customs declaration."
       },
       "customs_description": {
         "type": "string",
@@ -10465,6 +10501,12 @@
         "type": "string",
         "example": "12345678",
         "description": "Landline phone number of the receiver"
+      },
+      "vat_no": {
+        "type": ["string", "null"],
+        "example": "DK12345678",
+        "description": "VAT ID of the receiver",
+        "nullable": true
       }
     }
   },
@@ -10528,6 +10570,12 @@
         "type": "string",
         "example": "12345678",
         "description": "Landline phone number of the receiver"
+      },
+      "vat_no": {
+        "type": ["string", "null"],
+        "example": "DK12345678",
+        "description": "VAT ID of the receiver",
+        "nullable": true
       }
     }
   },
@@ -10584,6 +10632,12 @@
         "type": "string",
         "example": "12345678",
         "description": "Landline phone number of the receiver"
+      },
+      "vat_no": {
+        "type": ["string", "null"],
+        "example": "DK12345678",
+        "description": "VAT ID of the receiver",
+        "nullable": true
       },
       "instruction": {
         "type": "string",
@@ -10687,6 +10741,12 @@
         "type": "string",
         "example": "12345678",
         "description": "Landline phone number of the receiver"
+      },
+      "vat_no": {
+        "type": ["string", "null"],
+        "example": "DK12345678",
+        "description": "VAT ID of the receiver",
+        "nullable": true
       },
       "instruction": {
         "type": "string",
@@ -10807,6 +10867,14 @@
       },
       "carrier_fields": {
         "$ref": "#/components/schemas/CarrierFields"
+      },
+      "tags": {
+        "type": "array",
+        "description": "Custom tags for the order. Tags can be used to filter and search for orders.",
+        "items": {
+          "type": "string",
+          "example": "tag1"
+        }
       }
     }
   },

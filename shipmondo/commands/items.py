@@ -214,7 +214,7 @@ def create_cmd(
       "customs_commodity_code": {
         "type": "string",
         "example": "123456",
-        "description": "Tariff code for the item. Used when creating shipments that require customs declaration."
+        "description": "Global tariff code for the item. Used when creating shipments that require customs declaration."
       },
       "customs_description": {
         "type": "string",
@@ -374,7 +374,7 @@ def update_cmd(
       "customs_commodity_code": {
         "type": "string",
         "example": "123456",
-        "description": "Tariff code for the item. Used when creating shipments that require customs declaration."
+        "description": "Global tariff code for the item. Used when creating shipments that require customs declaration."
       },
       "customs_description": {
         "type": "string",
