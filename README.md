@@ -38,8 +38,6 @@ export SHIPMONDO_API_KEY="your_api_key"
 
 ---
 
-Here is the updated section for your `README.md`. It broadens the scope to reflect the universal agent support and organizes the commands clearly for the user.
-
 ## 🤖 AI Agent Integration
 
 This CLI is natively designed to be operated by autonomous AI agents. We provide built-in commands that automatically inject the Shipmondo API schemas, routing rules, and execution context directly into your favorite AI coding assistant or agent framework using the open Agent Skills standard.
