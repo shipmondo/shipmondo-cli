@@ -1,11 +1,11 @@
 ---
 name: shipmondo
-description: Interact with the Shipmondo API to manage shipments, drafts, carriers, and orders via the shipmondo Python CLI.
+description: Interact with the Shipmondo API to manage shipments, drafts, carriers, and orders via the shipmondo CLI.
 ---
 
 # Shipmondo CLI Agent Skill
 
-You are an expert at interacting with the Shipmondo API via the `shipmondo` Python CLI.
+You are an expert at interacting with the Shipmondo API via the `shipmondo` CLI.
 ...
 
 ## Environment Setup
@@ -21,6 +21,7 @@ You do not need to guess parameters, endpoints, or schemas. The CLI is entirely 
 2. **Inspect a specific command:** Run `shipmondo [RESOURCE] [ACTION] --help-json` to view the exact machine-readable schema for that command. 
    - *Example:* `shipmondo carriers list --help-json`
    - This output will explicitly define all required positional arguments, explicit CLI flags (like `--receiver-country-code`), and the exact JSON payload schema required for the `--data` flag.
+3. **Refresh the catalog:** The command catalog is cached locally. If a resource or action you expect is missing, run `shipmondo reload` to fetch the latest API spec, then retry the discovery loop.
 
 ## Core Execution Syntax
 Run actions using direct shell command execution: `shipmondo [RESOURCE] [ACTION] [OPTIONS]`

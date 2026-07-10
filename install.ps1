@@ -1,28 +1,32 @@
-Write-Host "📦 Starting Shipmondo CLI Installation for Windows..." -ForegroundColor Green
+# Shipmondo CLI installer (Windows PowerShell).
+# Downloads a single self-contained .exe from GitHub Releases.
+# Zero runtime dependencies.
 
-# 1. Ensure Python is installed
-if (-not (Get-Command "python" -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Error: Python is required but was not found." -ForegroundColor Red
-    Write-Host "Please install Python from python.org or the Microsoft Store." -ForegroundColor Yellow
-    exit 1
+$ErrorActionPreference = "Stop"
+$repo = "shipmondo/shipmondo-cli"
+
+Write-Host "📦 Installing the Shipmondo CLI..." -ForegroundColor Green
+
+# Detect architecture.
+$arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
+$asset = "shipmondo-windows-$arch.exe"
+$url = "https://github.com/$repo/releases/latest/download/$asset"
+
+# Install into a per-user directory and ensure it is on PATH.
+$installDir = Join-Path $env:LOCALAPPDATA "Shipmondo"
+New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+$target = Join-Path $installDir "shipmondo.exe"
+
+Write-Host "⬇️  Downloading $asset..." -ForegroundColor Green
+Invoke-WebRequest -Uri $url -OutFile $target -UseBasicParsing
+
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$installDir*") {
+    [Environment]::SetEnvironmentVariable("Path", "$userPath;$installDir", "User")
+    $env:Path = "$env:Path;$installDir"
+    Write-Host "⚙️  Added $installDir to your user PATH." -ForegroundColor Green
 }
 
-# 2. Check and provision pipx
-if (-not (Get-Command "pipx" -ErrorAction SilentlyContinue)) {
-    Write-Host "⚠️ pipx not found. Installing pipx globally via Python..." -ForegroundColor Yellow
-    python -m pip install --user pipx
-    
-    Write-Host "⚙️ Ensuring pipx environment PATH hooks are configured..." -ForegroundColor Green
-    python -m pipx ensurepath
-    
-    # Reload Path environment variable for the current session so pipx works immediately
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-}
-
-# 3. Perform the isolated app installation
-Write-Host "🚀 Installing shipmondo-cli in an isolated environment via pipx..." -ForegroundColor Green
-pipx install "git+https://github.com/shipmondo/shipmondo-cli.git" --force
-
-Write-Host "✅ Shipmondo CLI successfully installed!" -ForegroundColor Green
-Write-Host "Note: You may need to restart your PowerShell window if the 'shipmondo' command is not recognized immediately."
-Write-Host "Try running: shipmondo commands --json" -ForegroundColor Yellow
+Write-Host "✅ Shipmondo CLI installed to $target" -ForegroundColor Green
+Write-Host "Note: restart your PowerShell window if 'shipmondo' is not recognized immediately."
+Write-Host "Try running: shipmondo commands" -ForegroundColor Yellow
