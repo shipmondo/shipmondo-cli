@@ -155,20 +155,41 @@ The CLI's entire command surface is generated at runtime from the OpenAPI spec �
 
 ## Releasing (for maintainers)
 
-Binary releases are automated by [.github/workflows/release.yml](.github/workflows/release.yml). Pushing a `v*` tag cross-compiles every platform and publishes a GitHub Release with the exact asset names that `install.sh`, `install.ps1`, and `shipmondo update` expect (`shipmondo-<os>-<arch>`, plus `.exe` on Windows).
+A release is a GitHub Release with one binary attached per platform, named `shipmondo-<os>-<arch>` (plus `.exe` on Windows). Those exact names are what `install.sh`, `install.ps1`, and `shipmondo update` download from `https://github.com/shipmondo/shipmondo-cli/releases/latest/download/…`.
 
-To cut a release:
+### Manual release
+
+This is the process used today (GitHub Actions is not yet enabled). Requires Go and the [`gh` CLI](https://cli.github.com/) authenticated with `repo` scope. Bump the version each time (`v1.0.0`, `v1.1.0`, …):
 
 ```bash
-git checkout main
-git pull
-git tag v2.0.0            # bump to the next semver version
-git push origin v2.0.0
+export VERSION=v1.0.0
+
+git checkout main && git pull
+
+# 1. Tag the release at the current main commit
+git tag "$VERSION"
+git push origin "$VERSION"
+
+# 2. Cross-compile all six binaries into ./dist, version-stamped
+make dist VERSION="$VERSION"
+
+# 3. Publish the GitHub Release and upload the binaries as assets
+gh release create "$VERSION" dist/* --title "$VERSION" --generate-notes
 ```
 
-The workflow then builds darwin/linux/windows for amd64 + arm64, attaches the binaries to the release, and stamps the tag into the binary (`shipmondo version`). Once it finishes, `https://github.com/shipmondo/shipmondo-cli/releases/latest/download/...` resolves, so the `curl … | bash` and PowerShell installers work immediately.
+`make dist` builds darwin/linux/windows for amd64 + arm64 and stamps the version into each binary (`shipmondo version` → `shipmondo v1.0.0`). Once the release is published, the `curl … | bash` and PowerShell installers work immediately.
 
 Notes:
-* Tags **must** start with `v` to trigger the workflow.
-* The first-ever release is what makes `releases/latest` resolvable — until then the install scripts have nothing to download.
-* To build and publish manually instead of via CI: `make dist` then `gh release create v2.0.0 dist/* --generate-notes`.
+* The **first-ever** release is what makes `releases/latest` resolvable — until one exists the install scripts have nothing to download.
+* The release must not be a draft/prerelease, or `releases/latest` won't point at it (`gh release create` publishes a full release by default).
+* If `go`/`make` aren't on your `PATH`, prefix with the Homebrew path, e.g. `PATH="/opt/homebrew/bin:$PATH" make dist VERSION="$VERSION"`.
+
+### Automated release (once GitHub Actions is enabled)
+
+[.github/workflows/release.yml](.github/workflows/release.yml) does steps 2–3 automatically. After enabling Actions (Settings → Actions → General), cutting a release is just:
+
+```bash
+git tag v1.1.0 && git push origin v1.1.0
+```
+
+The workflow (which already declares `permissions: contents: write`, so the built-in token suffices) cross-compiles every platform and publishes the release. Tags **must** start with `v` to trigger it.
