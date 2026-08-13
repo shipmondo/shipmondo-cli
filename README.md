@@ -59,24 +59,24 @@ This means the command surface can be updated **without redistributing the binar
 
 This CLI is natively designed to be operated by autonomous AI agents. Built-in commands inject the Shipmondo API schemas, routing rules, and execution context directly into your favorite AI coding assistant using the open Agent Skills standard.
 
-### Supported Agents & IDEs
-
-Run the setup command for your preferred tool to install the Shipmondo skill into your current workspace:
-
-* **Claude Code:** `shipmondo setup claude`
-* **GitHub Copilot (VS Code):** `shipmondo setup copilot`
-* **Cursor IDE:** `shipmondo setup cursor`
-* **Windsurf IDE:** `shipmondo setup windsurf`
-
-### Generic Export (Other AI Tools)
-
-Export the standard-compliant Agent Skill folder directly to your current directory:
+### Setup
 
 ```bash
 shipmondo setup export
 ```
 
-This generates a `./shipmondo` folder containing the `SKILL.md` instructions, ready to be dropped into any Agent Skills-compatible workflow.
+This generates a `./shipmondo` folder containing the `SKILL.md` instructions, in the vendor-neutral [Agent Skills](https://github.com/anthropics/skills) format.
+
+We deliberately don't auto-install into each tool's own skills directory. Every tool has its own (often undocumented) convention for where it expects skill files, and those conventions change without notice — baking them into the CLI meant a new release every time one shifted. Instead, drop the exported folder wherever your tool looks for skills. As of this writing:
+
+| Tool | Where to put it |
+| --- | --- |
+| Claude Code | `.claude/skills/shipmondo/` (project) or `~/.claude/skills/shipmondo/` (all projects) |
+| GitHub Copilot (VS Code) | `.github/skills/shipmondo/` |
+| Cursor | `.cursor/skills/shipmondo/` |
+| Windsurf | `.windsurf/skills/shipmondo/` |
+
+A symlink works too, e.g. `ln -s "$(pwd)/shipmondo" .claude/skills/shipmondo`, so re-running `shipmondo setup export` after a `shipmondo update` (which may ship a newer `SKILL.md`) refreshes every linked location at once. Check your tool's current docs if a path above doesn't work — these are outside our control and can move at any time.
 
 ---
 

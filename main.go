@@ -94,7 +94,7 @@ func printHelp(spec *Spec) {
 	b.WriteString("Global commands:\n")
 	b.WriteString("  commands            Machine-readable catalog of every resource and action\n")
 	b.WriteString("  openapi             Print the raw embedded OpenAPI schema\n")
-	b.WriteString("  setup <target>      Install the agent skill (claude|copilot|cursor|windsurf|export)\n")
+	b.WriteString("  setup               Export the agent skill to ./shipmondo/SKILL.md\n")
 	b.WriteString("  reload              Clear the cached API spec and fetch a fresh copy\n")
 	b.WriteString("  update              Update to the latest released version\n")
 	b.WriteString("  version             Print the CLI version\n\n")
