@@ -52,6 +52,14 @@ fi
 chmod +x "$tmp"
 $use_sudo mv "$tmp" "$dir/shipmondo"
 
+# When sudo was needed to install, the binary ends up root-owned, which
+# would make every future `shipmondo update` fail with a permission error.
+# Hand ownership back to the invoking user so self-update keeps working
+# without sudo.
+if [ -n "$use_sudo" ]; then
+    $use_sudo chown "$(id -un)" "$dir/shipmondo"
+fi
+
 echo -e "${GREEN}✅ Shipmondo CLI installed to ${dir}/shipmondo${NC}"
 
 case ":$PATH:" in

@@ -46,6 +46,12 @@ func runUpdate() {
 
 	tmp, err := os.CreateTemp(filepath.Dir(self), ".shipmondo-update-*")
 	if err != nil {
+		if os.IsPermission(err) {
+			fail(fmt.Sprintf(
+				"Permission denied writing to %s. Re-run with sudo (sudo shipmondo update), or fix it permanently with: sudo chown \"$(whoami)\" %s",
+				filepath.Dir(self), self,
+			))
+		}
 		fail(fmt.Sprintf("Could not create temp file: %v", err))
 	}
 	tmpPath := tmp.Name()
