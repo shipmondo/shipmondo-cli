@@ -21,7 +21,7 @@ curl -fsSL https://raw.githubusercontent.com/shipmondo/shipmondo-cli/main/instal
 
 ### Windows (PowerShell)
 ```powershell
-Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shipmondo/shipmondo-cli/main/install.ps1" -UseBasicParsing).Content
+irm https://raw.githubusercontent.com/shipmondo/shipmondo-cli/main/install.ps1 | iex
 ```
 
 Or download a binary directly from the [Releases page](https://github.com/shipmondo/shipmondo-cli/releases/latest) and drop it anywhere on your PATH.
