@@ -123,6 +123,10 @@ func loadSpec(data []byte) (*Spec, error) {
 	}
 
 	for _, module := range s.ModuleOrder {
+		var cmds []*Command
+		var naiveNames []string
+		nameCount := map[string]int{}
+
 		for _, pe := range groups[module] {
 			parts := splitPath(pe.path)
 			resource := parts[0]
@@ -177,12 +181,30 @@ func loadSpec(data []byte) (*Spec, error) {
 					}
 				}
 
-				s.Catalog[module] = append(s.Catalog[module], cmd)
-				if s.Dispatch[module] == nil {
-					s.Dispatch[module] = map[string]*Command{}
-				}
-				s.Dispatch[module][cmdName] = cmd // last definition wins on name collisions
+				cmds = append(cmds, cmd)
+				naiveNames = append(naiveNames, cmdName)
+				nameCount[cmdName]++
 			}
+		}
+
+		// Command names are derived from path segments only, so two endpoints
+		// that differ solely by HTTP method (or by a trailing {id}) can land
+		// on the same naive name. Disambiguate only the colliding names here,
+		// leaving every already-unique name untouched to avoid renaming
+		// commands that already work.
+		for i, cmd := range cmds {
+			cmdName := naiveNames[i]
+			if nameCount[cmdName] > 1 {
+				parts := splitPath(cmd.Endpoint)
+				cmdName = refineCmdName(cmdName, strings.ToLower(cmd.Method), parts)
+				cmd.Name = cmdName
+			}
+
+			s.Catalog[module] = append(s.Catalog[module], cmd)
+			if s.Dispatch[module] == nil {
+				s.Dispatch[module] = map[string]*Command{}
+			}
+			s.Dispatch[module][cmdName] = cmd // last definition wins on remaining name collisions
 		}
 	}
 
@@ -205,12 +227,7 @@ func deriveCmdName(resource, method string, parts []string) string {
 		}
 	}
 
-	var sub []string
-	for _, p := range parts[1:] {
-		if !strings.Contains(p, "{") {
-			sub = append(sub, strings.ReplaceAll(p, "-", "_"))
-		}
-	}
+	sub := subSegments(parts)
 	if len(sub) > 0 {
 		name := strings.Join(sub, "_")
 		if method == "put" || method == "patch" || method == "delete" {
@@ -227,6 +244,47 @@ func deriveCmdName(resource, method string, parts []string) string {
 		return "delete"
 	default:
 		return method
+	}
+}
+
+// subSegments returns the non-parameter path segments after the resource,
+// with dashes normalized to underscores.
+func subSegments(parts []string) []string {
+	var sub []string
+	for _, p := range parts[1:] {
+		if !strings.Contains(p, "{") {
+			sub = append(sub, strings.ReplaceAll(p, "-", "_"))
+		}
+	}
+	return sub
+}
+
+// refineCmdName disambiguates a command name that collided with another
+// endpoint's naive name. It only distinguishes GET (list vs single-item, by
+// trailing path param) and POST (create) against whatever the colliding
+// group already produced, using the same method-prefix convention already
+// used for put/patch/delete elsewhere.
+func refineCmdName(naiveName, method string, parts []string) string {
+	sub := subSegments(parts)
+	joined := strings.Join(sub, "_")
+	trailingParam := len(parts) > 0 && strings.Contains(parts[len(parts)-1], "{")
+
+	switch method {
+	case "post":
+		if joined != "" {
+			return "create_" + joined
+		}
+		return "create"
+	case "get":
+		if trailingParam {
+			if joined != "" {
+				return "get_" + joined
+			}
+			return "get"
+		}
+		return naiveName
+	default:
+		return naiveName
 	}
 }
 
