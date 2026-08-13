@@ -22,6 +22,7 @@ You do not need to guess parameters, endpoints, or schemas. The CLI is entirely 
    - *Example:* `shipmondo carriers list --help-json`
    - This output will explicitly define all required positional arguments, explicit CLI flags (like `--receiver-country-code`), and the exact JSON payload schema required for the `--data` flag.
 3. **Refresh the catalog:** The command catalog is cached locally. If a resource or action you expect is missing, run `shipmondo reload` to fetch the latest API spec, then retry the discovery loop.
+4. **Still missing after reload:** If the action still doesn't exist after `reload`, the installed CLI binary itself may be out of date. Don't run `shipmondo update` yourself — tell the human to run it, since it replaces the CLI executable on their system.
 
 ## Core Execution Syntax
 Run actions using direct shell command execution: `shipmondo [RESOURCE] [ACTION] [OPTIONS]`
