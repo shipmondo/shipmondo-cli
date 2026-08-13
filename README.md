@@ -157,12 +157,22 @@ The CLI's entire command surface is generated at runtime from the OpenAPI spec �
 
 A release is a GitHub Release with one binary attached per platform, named `shipmondo-<os>-<arch>` (plus `.exe` on Windows). Those exact names are what `install.sh`, `install.ps1`, and `shipmondo update` download from `https://github.com/shipmondo/shipmondo-cli/releases/latest/download/…`.
 
-### Manual release
+### Automated release (GitHub Actions)
 
-This is the process used today (GitHub Actions is not yet enabled). Requires Go and the [`gh` CLI](https://cli.github.com/) authenticated with `repo` scope. Bump the version each time (`v1.0.0`, `v1.1.0`, …):
+[.github/workflows/release.yml](.github/workflows/release.yml) cross-compiles every platform and publishes the release automatically. Cutting a release is just:
 
 ```bash
-export VERSION=v1.0.0
+git tag v1.2.0 && git push origin v1.2.0
+```
+
+The workflow (which already declares `permissions: contents: write`, so the built-in token suffices) picks up the tag push, builds all six binaries, and publishes them as release assets. Tags **must** start with `v` to trigger it. The publish step is idempotent — if a release for that tag already exists (e.g. from a manual release below) it uploads the binaries with `--clobber` instead of failing.
+
+### Manual release (fallback)
+
+Useful if Actions is down or you want to publish without waiting on CI. Requires Go and the [`gh` CLI](https://cli.github.com/) authenticated with `repo` scope. Bump the version each time (`v1.0.0`, `v1.1.0`, …):
+
+```bash
+export VERSION=v1.2.0
 
 git checkout main && git pull
 
@@ -183,13 +193,4 @@ Notes:
 * The **first-ever** release is what makes `releases/latest` resolvable — until one exists the install scripts have nothing to download.
 * The release must not be a draft/prerelease, or `releases/latest` won't point at it (`gh release create` publishes a full release by default).
 * If `go`/`make` aren't on your `PATH`, prefix with the Homebrew path, e.g. `PATH="/opt/homebrew/bin:$PATH" make dist VERSION="$VERSION"`.
-
-### Automated release (once GitHub Actions is enabled)
-
-[.github/workflows/release.yml](.github/workflows/release.yml) does steps 2–3 automatically. After enabling Actions (Settings → Actions → General), cutting a release is just:
-
-```bash
-git tag v1.1.0 && git push origin v1.1.0
-```
-
-The workflow (which already declares `permissions: contents: write`, so the built-in token suffices) cross-compiles every platform and publishes the release. Tags **must** start with `v` to trigger it.
+* Since the tag push also triggers the Actions workflow, pushing the tag in step 1 kicks off an automated build in parallel — its idempotent publish step means whichever of the two (Actions or your manual `gh release create`) finishes first wins, and the other just uploads over it with `--clobber`.
