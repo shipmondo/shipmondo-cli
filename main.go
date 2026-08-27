@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -88,6 +89,8 @@ func loadedSpec() *Spec {
 }
 
 func printHelp(spec *Spec) {
+	printBanner()
+
 	var b strings.Builder
 	b.WriteString("Shipmondo CLI — agent-native interface to the Shipmondo API\n\n")
 	b.WriteString("Usage: shipmondo <resource> <action> [options]\n\n")
@@ -107,8 +110,56 @@ func printHelp(spec *Spec) {
 	b.WriteString("  --help-json         Print the machine-readable schema for an action\n\n")
 	b.WriteString("Discovery: run 'shipmondo commands' for the full catalog, and\n")
 	b.WriteString("'shipmondo <resource> <action> --help-json' for a single action's schema.\n\n")
-	b.WriteString("Resources: ")
-	b.WriteString(strings.Join(spec.ModuleOrder, ", "))
-	b.WriteString("\n")
+	b.WriteString("Resources:\n")
+	b.WriteString(formatColumns(spec.ModuleOrder, terminalWidth()))
 	fmt.Print(b.String())
+}
+
+// formatColumns lays out names in a left-aligned, evenly spaced grid that
+// fits within width, reading top-to-bottom within each column (like `ls`).
+func formatColumns(names []string, width int) string {
+	if len(names) == 0 {
+		return ""
+	}
+
+	longest := 0
+	for _, n := range names {
+		if len(n) > longest {
+			longest = len(n)
+		}
+	}
+	colWidth := longest + 2
+
+	cols := (width) / colWidth
+	if cols < 1 {
+		cols = 1
+	}
+	rows := (len(names) + cols - 1) / cols
+	cols = (len(names) + rows - 1) / rows // shrink to avoid trailing empty columns
+
+	var b strings.Builder
+	for r := 0; r < rows; r++ {
+		for c := 0; c < cols; c++ {
+			i := c*rows + r
+			if i >= len(names) {
+				continue
+			}
+			if c == cols-1 {
+				b.WriteString("  " + names[i])
+			} else {
+				b.WriteString("  " + names[i] + strings.Repeat(" ", colWidth-len(names[i])))
+			}
+		}
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
+// terminalWidth returns the terminal's column count, falling back to 80
+// when it can't be determined (piped output, unset COLUMNS, etc).
+func terminalWidth() int {
+	if cols, err := strconv.Atoi(os.Getenv("COLUMNS")); err == nil && cols > 0 {
+		return cols
+	}
+	return 80
 }

@@ -1251,6 +1251,52 @@
       ]
    }
 },
+"/documents/upload": {
+   "post": {
+    "tags": [
+      "Documents"
+    ],
+    "summary": "Document Upload",
+    "description": "Prepare a document for direct upload. This endpoint is used to prepare a document for direct upload and subsequent usage in other requests. Refer to the [Direct Upload](https://shipmondo.dev/docs/api/carrier-specific/document_upload) guide for more information.",
+    "operationId": "document_upload_post",
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/PrepareDirectUploadRequest"
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "200": {
+        "description": "Successful.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PrepareDirectUploadResponse"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "#/components/responses/Unauthorized"
+      },
+      "404": {
+        "$ref": "#/components/responses/NotFound"
+      },
+      "422": {
+        "$ref": "#/components/responses/InvalidRequest"
+      }
+    },
+    "security": [
+      {
+        "basicAuth": []
+      }
+    ]
+  }
+},
     
 "/items": {
    "get": {
@@ -1596,6 +1642,15 @@
                   "type": "number",
                   "example": 15.6
                }
+            },
+            {
+               "name": "label_dpi",
+               "in": "query",
+               "description": "Resolution (dots per inch) to return the ZPL label at. If it differs from the resolution the label was originally created at, the ZPL is converted to this resolution. Only applicable when label_format: zpl, 10x19_zpl, compact_zpl.",
+               "schema": {
+                  "type": "integer",
+                  "enum": [200, 300]
+               }
             }
       ],
       "responses": {
@@ -1683,6 +1738,15 @@
               "schema": {
                 "type": "number",
                 "example": 15.6
+              }
+          },
+        {
+              "name": "label_dpi",
+              "in": "query",
+              "description": "Resolution (dots per inch) to return the ZPL label at. If it differs from the resolution the label was originally created at, the ZPL is converted to this resolution. Only applicable when label_format: zpl, 10x19_zpl, compact_zpl.",
+              "schema": {
+                "type": "integer",
+                "enum": [200, 300]
               }
           }
       ],
@@ -4088,7 +4152,7 @@
    "get": {
       "tags": [
          "Service points by product",
-         "Shipping modules"
+         "Delivery checkout"
       ],
       "summary": "Get service points based on product.",
       "description": "The endpoint will return an array of the closest service points available to the destination, according to the parameters. The list will be sorted by distance when possible.",
@@ -4204,7 +4268,7 @@
    "get": {
       "tags": [
          "Service points by product",
-         "Shipping modules"
+         "Delivery Checkout"
       ],
       "summary": "Get valid service point types",
       "description": "The endpoint will return all service point types for a given product code, and optionally country code. It is recommended to supply a country code, since service point types could potentially vary from country to country for a given product.",
@@ -4263,10 +4327,10 @@
     "/shipping_modules/carriers": {
    "get": {
       "tags": [
-         "Shipping modules"
+         "Delivery checkout"
       ],
       "summary": "Get carriers",
-      "description": "The endpoint will return all carriers valid for shipping modules.",
+      "description": "The endpoint will return all carriers valid for delivery checkouts.",
       "operationId": "shipping_modules_carriers_get",
       "parameters": [
          {
@@ -4322,7 +4386,7 @@
 "/shipping_modules/products": {
    "get": {
       "tags": [
-         "Shipping modules"
+         "Delivery checkout"
       ],
       "summary": "Get valid products",
       "description": "The endpoint will return all products for the given carrier code.",
@@ -4381,7 +4445,7 @@
 "/shipping_modules/shopify/shipping_methods/{id}": {
    "get": {
       "tags": [
-         "Shipping modules"
+         "Delivery checkout"
       ],
       "summary": "Get Shopify shipping method",
       "description": "The endpoint will return details for a specific Shopify shipping method that belongs to your account.",
@@ -4680,6 +4744,22 @@
         "schema": {
           "type": "integer",
           "default": 1
+        }
+      },
+      {
+        "name": "reference",
+        "in": "query",
+        "description": "Filter based on the reference field.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "additional_reference",
+        "in": "query",
+        "description": "Filter based on the additional_reference field.",
+        "schema": {
+          "type": "string"
         }
       }
     ],
@@ -5154,7 +5234,8 @@
     ],
     "x-codegen-request-body-name": "body"
   }
-},
+}
+,
     "/shipment_drafts": {
    "get": {
       "tags": [
@@ -6601,17 +6682,20 @@
       "email": {
         "type": "string",
         "example": "info@minvirksomhed.dk",
-        "description": "Email address of the sender"
+        "description": "Email address of the sender",
+        "nullable": true
       },
       "mobile": {
         "type": "string",
         "example": "70400407",
-        "description": "Mobile number of the sender"
+        "description": "Mobile number of the sender",
+        "nullable": true
       },
       "telephone": {
         "type": "string",
         "example": "70400407",
-        "description": "Landline phone number of the sender"
+        "description": "Landline phone number of the sender",
+        "nullable": true
       }
     }
   },
@@ -6666,7 +6750,8 @@
       "email": {
         "type": "string",
         "example": "lene@email.dk",
-        "description": "Email address of the receiver"
+        "description": "Email address of the receiver",
+        "nullable": true
       },
       "vat_id": {
         "type": "string",
@@ -6732,63 +6817,76 @@
     "properties": {
       "name": {
         "type": "string",
-        "example": "Min Virksomhed A/S"
+        "example": "Min Virksomhed A/S",
+        "nullable": true
       },
       "attention": {
         "type": "string",
-        "example": null
+        "example": null,
+        "nullable": true
       },
       "address1": {
         "type": "string",
-        "example": "Hvilehøjvej 25"
+        "example": "Hvilehøjvej 25",
+        "nullable": true
       },
       "address2": {
         "type": "string",
         "description": "Second address line. Can be used for floor/room number, building name etc.",
-        "example": null
+        "example": null,
+        "nullable": true
       },
       "country_code": {
         "type": "string",
-        "example": "DK"
+        "example": "DK",
+        "nullable": true
       },
       "zipcode": {
         "type": "string",
-        "example": "5220"
+        "example": "5220",
+        "nullable": true
       },
       "city": {
         "type": "string",
-        "example": "Odense SØ"
+        "example": "Odense SØ",
+        "nullable": true
       },
       "telephone": {
         "type": "string",
-        "example": "80808080"
+        "example": "80808080",
+        "nullable": true
       },
       "instruction": {
         "type": "string",
         "example": "Goods are placed at gate 21",
-        "description": "Pickup instruction to the carrier. Only applicable for products which supports pickup instructions."
+        "description": "Pickup instruction to the carrier. Only applicable for products which supports pickup instructions.",
+        "nullable": true
       },
       "date": {
         "type": "string",
         "format": "date",
         "example": "2021-10-13",
-        "description": "Requested pickup date."
+        "description": "Requested pickup date.",
+        "nullable": true
       },
       "from_time": {
         "type": "string",
         "format": "time",
         "example": "08:00",
-        "description": "Requested earliest pickup time."
+        "description": "Requested earliest pickup time.",
+        "nullable": true
       },
       "to_time": {
         "type": "string",
         "format": "time",
         "example": "16:00",
-        "description": "Requested latest pickup time."
+        "description": "Requested latest pickup time.",
+        "nullable": true
       },
       "pickup_custom": {
         "type": "boolean",
-        "description": "Whether the shipment includes a pickup address other than sender address."
+        "description": "Whether the shipment includes a pickup address other than sender address.",
+        "nullable": true
       }
     }
   },
@@ -6859,58 +6957,71 @@
     "properties": {
       "name": {
         "type": "string",
-        "example": "Min Virksomhed A/S"
+        "example": "Min Virksomhed A/S",
+        "nullable": true
       },
       "attention": {
         "type": "string",
-        "example": null
+        "example": null,
+        "nullable": true
       },
       "address1": {
         "type": "string",
-        "example": "Hvilehøjvej 25"
+        "example": "Hvilehøjvej 25",
+        "nullable": true
       },
       "address2": {
         "type": "string",
         "description": "Second address line can be used for floor/room number, building name etc.",
-        "example": null
+        "example": null,
+        "nullable": true
       },
       "zipcode": {
         "type": "string",
-        "example": "5220"
+        "example": "5220",
+        "nullable": true
       },
       "city": {
         "type": "string",
-        "example": "Odense SØ"
+        "example": "Odense SØ",
+        "nullable": true
       },
       "country_code": {
         "type": "string",
-        "example": "DK"
+        "example": "DK",
+        "nullable": true
       },
       "vat_id": {
         "description": "VAT no. of the customs billing party.",
         "type": "string",
-        "example": "DK12345678"
+        "example": "DK12345678",
+        "nullable": true
       },
       "telephone": {
         "type": "string",
-        "example": "80808080"
+        "example": "80808080",
+        "nullable": true
       },
       "mobile": {
         "type": "string",
-        "example": "80808080"
+        "example": "80808080",
+        "nullable": true
       },
       "email": {
         "type": "string",
-        "example": "jim@minvirksomhed.dk"
+        "example": "jim@minvirksomhed.dk",
+        "nullable": true
       },
       "bill_to_custom": {
         "type": "boolean",
-        "description": "Whether the shipment includes a billing address for customs other sender address."
+        "description": "Whether the shipment includes a billing address for customs other sender address.",
+        "nullable": true
       },
       "customer_number": {
         "type": "string",
         "example": "12345678",
-        "description": "Separate carrier customer number to bill if applicable with the given carrier."
+        "description": "Separate carrier customer number to bill if applicable with the given carrier.",
+        "nullable": true
       }
     }
   },
@@ -7194,10 +7305,19 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/DangerousGood"
-        }
+        },
+        "minItems": 0
       },
       "declared_value": {
         "$ref": "#/components/schemas/DeclaredValue"
+      },
+      "attributes": {
+        "type": "array",
+        "minItems": 0,
+        "description": "Attributes for the parcel. Used for additional information.",
+        "items": {
+          "$ref": "#/components/schemas/DynamicAttribute"
+        }
       }
     }
   },
@@ -7225,7 +7345,8 @@
       "pkg_no": {
         "type": "string",
         "description": "Carrier's package number refers to the specific package/colli.",
-        "example": "1064548752"
+        "example": "1064548752",
+        "nullable": true
       },
       "pkg_nos": {
         "type": "array",
@@ -7236,7 +7357,8 @@
         "description": "Carrier's package numbers for all packages if quantity is larger than 1.",
         "example": [
           "1064548752"
-        ]
+        ],
+        "nullable": true
       },
       "external_pkg_no": {
         "type": "string",
@@ -7315,8 +7437,20 @@
         "minItems": 0
       },
       "declared_value": {
-        "$ref": "#/components/schemas/DeclaredValue",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DeclaredValue"
+          }
+        ],
         "nullable": true
+      },
+      "attributes": {
+        "type": "array",
+        "minItems": 0,
+        "description": "Attributes for the parcel. Used for additional information.",
+        "items": {
+          "$ref": "#/components/schemas/DynamicAttribute"
+        }
       },
       "gls_colli_id": {
         "type": "string",
@@ -7364,6 +7498,15 @@
         ],
         "example": null
       },
+      "label_dpi": {
+        "type": "integer",
+        "description": "Specifies the DPI (dots per inch) for the label when printed in ZPL format.",
+        "enum": [
+          200,
+          300
+        ],
+        "default": 200
+      },
       "product_code": {
         "type": "string",
         "description": "Product code of the product of the shipment.",
@@ -7407,8 +7550,8 @@
       },
       "origin_shipment_id": {
         "description": "ID of the origin shipment that the shipment is a return for.",
-        "type": "string",
-        "example": "1000001235"
+        "type": "integer",
+        "example": 1000001235
       },
       "parties": {
         "type": "array",
@@ -7573,6 +7716,14 @@
           ]
         },
         "minItems": 1
+      },
+      "documents": {
+        "type": "array",
+        "description": "Array of documents to be sent with the shipment. Only applicable for specific products and carriers.",
+        "items": {
+          "$ref": "#/components/schemas/UploadedDocument"
+        },
+        "minItems": 0
       },
       "print": {
         "type": "boolean",
@@ -8132,7 +8283,8 @@
       "service_codes": {
         "description": "Comma-separated string of codes of services that is booked with the shipment.",
         "type": "string",
-        "example": "EMAIL_NT,SMS_NT"
+        "example": "EMAIL_NT,SMS_NT",
+        "nullable": true
       },
       "services": {
         "description": "Comma-separated string of IDs of services that are booked with the shipment.",
@@ -8173,7 +8325,8 @@
       "pkg_no": {
         "description": "Carrier's shipment number, referring to the whole shipment.",
         "type": "string",
-        "example": "6064518784"
+        "example": "6064518784",
+        "nullable": true
       },
       "external_pkg_no": {
         "type": "string",
@@ -8229,8 +8382,8 @@
       },
       "source_id": {
         "description": "ID of the source of the shipment from which it has been created.",
-        "type": "string",
-        "example": "1000001234",
+        "type": "integer",
+        "example": 1000001234,
         "nullable": true
       },
       "source_type": {
@@ -8242,14 +8395,14 @@
       },
       "return_shipment_id": {
         "description": "ID of the return shipment that has been created for the shipment.",
-        "type": "string",
-        "example": "1000001234",
+        "type": "integer",
+        "example": 1000001234,
         "nullable": true
       },
       "origin_shipment_id": {
         "description": "ID of the origin shipment that the shipment was created as return for.",
-        "type": "string",
-        "example": "1000001235",
+        "type": "integer",
+        "example": 1000001235,
         "nullable": true
       },
       "carrier_insurance": {
@@ -8286,6 +8439,7 @@
       "pickup_details": {
         "type": "object",
         "description": "Details for pickup.",
+        "nullable": true,
         "properties": {
           "date": {
             "type": "string",
@@ -8315,6 +8469,7 @@
       "delivery_details": {
         "type": "object",
         "description": "Details for delivery.",
+        "nullable": true,
         "properties": {
           "date": {
             "type": "string",
@@ -8563,7 +8718,7 @@
               "nullable": false
             },
             "customs_commodity_code": {
-              "type": ["string", "null"],
+              "type": "string",
               "description": "Country specific tariff code for the item. Used when creating shipments that require customs declaration to the specified country.",
               "example": "3924102000",
               "nullable": true
@@ -9222,7 +9377,8 @@
       "address2": {
         "type": "string",
         "example": null,
-        "description": "Second address line can be used for floor/room number, building name etc."
+        "description": "Second address line can be used for floor/room number, building name etc.",
+        "nullable": true
       },
       "zipcode": {
         "type": "string",
@@ -10503,7 +10659,7 @@
         "description": "Landline phone number of the receiver"
       },
       "vat_no": {
-        "type": ["string", "null"],
+        "type": "string",
         "example": "DK12345678",
         "description": "VAT ID of the receiver",
         "nullable": true
@@ -10572,7 +10728,7 @@
         "description": "Landline phone number of the receiver"
       },
       "vat_no": {
-        "type": ["string", "null"],
+        "type": "string",
         "example": "DK12345678",
         "description": "VAT ID of the receiver",
         "nullable": true
@@ -10634,7 +10790,7 @@
         "description": "Landline phone number of the receiver"
       },
       "vat_no": {
-        "type": ["string", "null"],
+        "type": "string",
         "example": "DK12345678",
         "description": "VAT ID of the receiver",
         "nullable": true
@@ -10743,7 +10899,7 @@
         "description": "Landline phone number of the receiver"
       },
       "vat_no": {
-        "type": ["string", "null"],
+        "type": "string",
         "example": "DK12345678",
         "description": "VAT ID of the receiver",
         "nullable": true
@@ -10779,7 +10935,7 @@
     "type": "object",
     "properties": {
       "amount": {
-        "type": ["string", "null"],
+        "type": "string",
         "nullable": true,
         "example": "200.00",
         "description": "Amount to be refunded. \nIf not specified the captured amount for the transaction associated with the order will be refunded."
@@ -10790,7 +10946,7 @@
     "type": "object",
     "properties": {
       "amount": {
-        "type": ["string", "null"],
+        "type": "string",
         "nullable": true,
         "example": "200.00",
         "description": "Amount to be voided. \nIf not specified the uncaptured amount for the transaction associated with the order will be voided."
@@ -10976,7 +11132,7 @@
       "cost_price": {
         "type": "string",
         "example": "50.0",
-        "description": "Unit cost price of the item as used for customs."
+        "description": "Unit cost price of the item."
       },
       "country_code_of_origin": {
         "type": "string",
@@ -11087,7 +11243,7 @@
       "cost_price": {
         "type": "string",
         "example": "50.0",
-        "description": "Unit cost price of the item as used for customs."
+        "description": "Unit cost price of the item."
       },
       "country_code_of_origin": {
         "type": "string",
@@ -11840,7 +11996,6 @@
     }
   },
   "CloseWaybillRequest": {
-    "required": [],
     "type": "object",
     "properties": {
       "label_format": {
@@ -11853,15 +12008,15 @@
       },
       "packages": {
         "description": "Required unless the waybill uses load carriers.",
-        "required": [
-          "product_code",
-          "package_type",
-          "amount",
-          "weight"
-        ],
         "type": "array",
         "items": {
           "type": "object",
+          "required": [
+            "product_code",
+            "package_type",
+            "amount",
+            "weight"
+          ],
           "properties": {
             "product_code": {
               "description": "Product code of the parcels that the pallet contains. If pallets contain multiple products, the codes must be comma-separated, e.g., \"PDK_M,PDK_BP\".",
@@ -12308,6 +12463,17 @@
         "description": "Net weight in kilograms of the dangerous goods. Use either this or net_weight.",
         "example": 20.1
       },
+      "gross_weight": {
+        "type": "integer",
+        "description": "Gross weight in grams of the dangerous goods. Use either this or gross_weight_kg.",
+        "example": 20100
+      },
+      "gross_weight_kg": {
+        "type": "number",
+        "multipleOf": 0.001,
+        "description": "gross weight in kilograms of the dangerous goods. Maximum 3 decimal places. Use either this or gross_weight.",
+        "example": 20.1
+      },
       "quantity": {
         "type": "integer",
         "description": "Number of pieces of this kind of dangerous goods.",
@@ -12347,12 +12513,14 @@
       "amount": {
         "type": "number",
         "description": "Valued amount.",
-        "example": 1250
+        "example": 1250,
+        "nullable": true
       },
       "currency_code": {
         "type": "string",
         "description": "Currency code for the currency of the amount.",
-        "example": "DKK"
+        "example": "DKK",
+        "nullable": true
       }
     }
   },
@@ -12379,32 +12547,32 @@
         "type": "array",
         "items": {
           "type": "string",
-          "example": "dashboard"
+          "example": "dashboard",
+          "enum": [
+            "api",
+            "team",
+            "products",
+            "orders",
+            "own_agreements",
+            "pick_ups",
+            "customers",
+            "dashboard",
+            "shipments",
+            "statistics",
+            "billing",
+            "outstanding",
+            "card_details",
+            "integrations",
+            "return_portals",
+            "sales_invoices",
+            "personal_messages",
+            "templates"
+          ]
         },
         "example": [
           "dashboard",
           "orders",
           "shipments"
-        ],
-        "enum": [
-          "api",
-          "team",
-          "products",
-          "orders",
-          "own_agreements",
-          "pick_ups",
-          "customers",
-          "dashboard",
-          "shipments",
-          "statistics",
-          "billing",
-          "outstanding",
-          "card_details",
-          "integrations",
-          "return_portals",
-          "sales_invoices",
-          "personal_messages",
-          "templates"
         ]
       }
     }
@@ -12846,7 +13014,8 @@
       "attention": {
         "type": "string",
         "description": "Attention field can be used for the name of a specific person at the address.",
-        "example": "Lene Hansen"
+        "example": "Lene Hansen",
+        "nullable": true
       },
       "address1": {
         "type": "string",
@@ -12856,7 +13025,8 @@
       "address2": {
         "type": "string",
         "description": "Second address line can be used for floor/room number, building name etc.",
-        "example": null
+        "example": null,
+        "nullable": true
       },
       "postal_code": {
         "type": "string",
@@ -12876,12 +13046,14 @@
       "email": {
         "type": "string",
         "description": "E-mail address of the party.",
-        "example": "info@minvirksomhed.dk"
+        "example": "info@minvirksomhed.dk",
+        "nullable": true
       },
       "phone": {
         "type": "string",
         "description": "Phone number of the party.",
-        "example": "+4570400407"
+        "example": "+4570400407",
+        "nullable": true
       },
       "attributes": {
         "type": "array",
@@ -13009,9 +13181,12 @@
         "$ref": "#/components/schemas/PalletExchange"
       },
       "customs": {
-        "type": "object",
         "description": "Customs information.",
-        "$ref": "#/components/schemas/ShipmentDraftCustoms"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ShipmentDraftCustoms"
+          }
+        ]
       },
       "cod": {
         "$ref": "#/components/schemas/CashOnDelivery"
@@ -13160,7 +13335,8 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/ShipmentDraftDangerousGood"
-        }
+        },
+        "minItems": 0
       },
       "declared_value": {
         "$ref": "#/components/schemas/DeclaredValue"
@@ -13282,6 +13458,17 @@
         "description": "Net weight in kilograms of the dangerous goods. Use either this or net_weight.",
         "example": 20.1
       },
+      "gross_weight": {
+        "type": "integer",
+        "description": "Gross weight in grams of the dangerous goods. Use either this or gross_weight_kg.",
+        "example": 20100
+      },
+      "gross_weight_kg": {
+        "type": "number",
+        "multipleOf": 0.001,
+        "description": "gross weight in kilograms of the dangerous goods. Maximum 3 decimal places. Use either this or gross_weight.",
+        "example": 20.1
+      },
       "quantity": {
         "type": "integer",
         "description": "Number of pieces of this kind of dangerous goods.",
@@ -13312,6 +13499,96 @@
         "description": "Whether or not the dangerous goods are hazardous to the environment."
       }
     }
+  },
+  "PrepareDirectUploadRequest": {
+    "required": [
+      "file_name",
+      "byte_size",
+      "checksum",
+      "content_type"
+    ],
+    "type": "object",
+    "properties": {
+      "file_name": {
+        "type": "string",
+        "description": "the name of the file to be uploaded.",
+        "example": "test_file.pdf"
+      },
+      "byte_size": {
+        "description": "Byte size of the file to be uploaded.",
+        "type": "integer",
+        "example": 15584
+      },
+      "checksum": {
+        "type": "string",
+        "description": "Checksum of the file to be uploaded, calculated as a base64 encoded MD5 hash.",
+        "example": "ptCgPrKd1VRBr2hOeYNRWQ=="
+      },
+      "content_type": {
+        "description": "The content type of the file to be uploaded.",
+        "type": "string",
+        "example": "application/pdf",
+        "enum": [
+          "application/pdf"
+        ]
+      }
+    }
+  },
+  "PrepareDirectUploadResponse": {
+    "type": "object",
+    "allOf": [
+      {
+        "type": "object",
+        "properties": {
+          "signed_id": {
+            "type": "string",
+            "description": "A signed identifier for the file to be uploaded, which can be used to reference the file in subsequent requests.",
+            "example": " eyJf(...)"
+          },
+          "direct_upload": {
+            "type": "object",
+            "description": "Information about how to perform the direct upload of the file.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "example": "https://app.shipmondo.com/active_storage/eyJf(...)",
+                "description": "Target URL to perform direct upload to"
+              },
+              "headers": {
+                "type": "object",
+                "description": "Headers to include in the request to perform direct upload. The request must include all keys present here as Headers with their associated value.",
+                "properties": {
+                  "Content-Type": {
+                    "type": "string",
+                    "example": "application/pdf"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "UploadedDocument": {
+    "type": "object",
+    "required": [
+      "document_type",
+      "signed_id"
+    ],
+    "properties": {
+      "document_type": {
+        "type": "string",
+        "description": "Type of the document.",
+        "example": "other",
+        "enum": ["other","proforma_invoice","commercial_invoice","cn_22","cn_23","consignment_note","bill_of_lading","auth_form","certificate_of_origin","export_accompanying_document","export_license","import_permit","one_time_usmca","power_of_attorney","packing_list","sed_document","shippers_letter_of_instruction","declaration","nafta_certificate_of_origin","air_waybill","invoice","customs_declaration"]
+      },
+      "signed_id": {
+        "type": "string",
+        "description": "The signed identifier for the document, which can be obtained from the [upload document](https://shipmondo.dev/api-reference/#/operations/document_upload_post) endpoint.",
+        "example": "eyJf(...)"
+      }
+    }
   }
 }
 ,
@@ -13325,7 +13602,7 @@
       "type": "apiKey",
       "in": "query",
       "name": "frontend_key",
-      "description": "\nThis endpoint supports authentication by shipping module key The shipping module key should be provided in the 'frontend_key' query parameter.\n         \n\n\n         Refer to this guide in order to generate a shipping module key: https://help.shipmondo.com/en/articles/1897540-create-a-shipping-module-key\n      "
+      "description": "\nThis endpoint supports authentication by delivery checkout key The delivery checkout key should be provided in the 'frontend_key' query parameter.\n         \n\n\n         Refer to this guide in order to generate a delivery checkout key: https://help.shipmondo.com/en/articles/1897540-create-a-shipping-module-key\n      "
    }
 }
   }
