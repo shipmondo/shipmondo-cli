@@ -22,8 +22,8 @@
       "tags": [
          "Account"
       ],
-      "summary": "Retrieve account infomation",
-      "description": "Returns infomation on the currenctly logged in account.",
+      "summary": "Retrieve account information",
+      "description": "Returns information on the currently logged in account.",
       "operationId": "account",
       "responses": {
          "200": {
@@ -260,7 +260,8 @@
          }
       ]
    }
-},
+}
+,
     "/bookkeeping_integrations": {
    "get": {
       "tags": [
@@ -525,7 +526,7 @@
     "description": "Creates a new bulk waybill and associated routing label shipments.",
     "operationId": "waybills_post",
     "requestBody": {
-      "description": "Bulk Waybill Object.\n\n**Note**: loading (except date if carrier is Bring) and delivery are optional.\n\nIf not all fields are given, loading will be overwritten by sender (except date) and delivery will be overwritten by receiver.",
+      "description": "Bulk Waybill Object.\n\n**Note**: loading (except date if carrier is Bring) and delivery are optional.\n\nIf not all fields are given, loading will be overwritten by sender (except date) and delivery will be overwritten by receiver.\n\n**Note**: For Bring, the delivery address (or receiver, if delivery is not given) must be a valid Bring terminal address.",
       "content": {
         "application/json": {
           "schema": {
@@ -1181,7 +1182,8 @@
                "enum": [
                   "deutsche_post",
                   "asendia",
-                  "bring"
+                  "bring",
+                  "dhl_parcel"
                ]
             }
          },
@@ -1189,7 +1191,7 @@
             "name": "bag_quantity",
             "in": "query",
             "required": false,
-            "description": "Quantity of bags to be declared <br> <strong>Note:</strong> <ul>\n<li>Required for Deutsche Post, but is only used if an open order is being closed</li>",
+            "description": "Quantity of bags to be declared <br> <strong>Note:</strong> <ul>\n<li>Required for Deutsche Post, but is only used if an open order is being closed</li>\n<li>For DHL Parcel it is added to container_quantity, and one of the two must be stated</li></ul>",
             "schema": {
                "type": "integer",
                "default": 0
@@ -1198,8 +1200,7 @@
          {
             "name": "container_quantity",
             "in": "query",
-            "description": "Quantity of bags to be declared <br> <strong>Note:</strong> <ul>\n<li>If used with Deutsche Post it is just added to bag_quantity</li></ul>",
-            "deprecated": true,
+            "description": "Quantity of containers to be declared <br> <strong>Note:</strong> <ul>\n<li>Required for DHL Parcel unless bag_quantity is stated, but is only used if an open order is being closed</li>\n<li>If used with Deutsche Post it is just added to bag_quantity</li></ul>",
             "schema": {
                "type": "integer",
                "default": 0
@@ -3086,6 +3087,76 @@
       "x-codegen-request-body-name": "body"
    }
 },
+"/sales_orders/{id}/hold": {
+  "put": {
+    "description": "Puts a sales order on hold. Returns an error if the order is already on hold, or if the current order state does not allow it to be put on hold.",
+    "operationId": "sales_order_hold",
+    "parameters": [
+      {
+        "description": "ID for the sales order that should be put on hold.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SalesOrder"
+            }
+          }
+        },
+        "description": "Successful."
+      },
+      "401": { "$ref": "#/components/responses/Unauthorized" },
+      "404": { "$ref": "#/components/responses/NotFound" },
+      "422": { "$ref": "#/components/responses/InvalidRequest" }
+    },
+    "security": [{ "basicAuth": [] }],
+    "summary": "Hold a sales order",
+    "tags": ["Sales orders"]
+  }
+},
+"/sales_orders/{id}/unhold": {
+  "put": {
+    "description": "Resumes a sales order that is on hold. Returns an error if the order is not on hold, or if the current order state does not allow it to be resumed.",
+    "operationId": "sales_order_unhold",
+    "parameters": [
+      {
+        "description": "ID for the sales order that should be resumed.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SalesOrder"
+            }
+          }
+        },
+        "description": "Successful."
+      },
+      "401": { "$ref": "#/components/responses/Unauthorized" },
+      "404": { "$ref": "#/components/responses/NotFound" },
+      "422": { "$ref": "#/components/responses/InvalidRequest" }
+    },
+    "security": [{ "basicAuth": [] }],
+    "summary": "Resume a sales order",
+    "tags": ["Sales orders"]
+  }
+},
 "/sales_orders/{id}/create_shipment": {
    "post": {
       "tags": [
@@ -4679,7 +4750,7 @@
         "description": "Carrier code to be included in the filter.",
         "schema": {
           "type": "string",
-          "enum": ["airmee","alpi","asendia","best","bft","bhs_logistics","bws","bpost","bring","brink","budbee","burd","city_mail","cm_transport","collicare","dachser","dansk_distribution_brabrand","dansk_distribution","dansk_distribution_taulov","dfm","dao","db_schenker","deutsche_post","dhl_express","dhl_freight_se","dhl_parcel","dpd","dsv_parcel","dsv","dsv_xpress","early_bird","esbjerg_gods","esbjerg_gods_sjaelland","fed_ex","freja","geodis","gls","gls_de","gordon","helthjem","instabox","interfjord","jetpak","jetpak_se","jjd","joervi_transport","kht","leman","lgt_logistics","link_logistics","b2c_europe","mover","nonbo_fragt","packeta","posti","post_nl","pdk","post_nord","sand_distribution","sdl","simptra","tjw","tnt","ups","webrinq","xpressen","unspecified"]
+          "enum": ["airmee","alpi","asendia","best","bft","bhs_logistics","bws","bpost","bring","brink","budbee","burd","city_mail","cm_transport","collicare","dachser","dansk_distribution_brabrand","dansk_distribution","dansk_distribution_taulov","dfm","dao","deutsche_post","dhl_express","dhl_freight_se","dhl_parcel","dpd","dsv_parcel","dsv","db_schenker","dsv_xpress","early_bird","esbjerg_gods","esbjerg_gods_sjaelland","fed_ex","freja","geodis","gls","gls_de","gordon","helthjem","instabox","interfjord","jetpak","jetpak_se","jjd","joervi_transport","kht","leman","lgt_logistics","link_logistics","b2c_europe","mover","nonbo_fragt","packeta","posti","post_nl","pdk","post_nord","sand_distribution","sdl","simptra","tjw","tnt","ups","webrinq","xpressen","unspecified"]
         }
       },
       {
@@ -5045,7 +5116,7 @@
       "Shipments"
     ],
     "summary": "Retrieve waybill for a shipment",
-    "description": "\nReturns waybill for a shipment.\n\n\nWaybills are carrier specific and compared to collected waybills these only cover one shipment.\n\n\n**Danske Fragtmænd** supports this when **INCL_WAYBILL** service is booked.\n\n\n**DHL Freight** offers support when either the INCL_WAYBILL/ADR service is booked or when the following products are selected: Parti (SE), Euroline, or Euroline Domestic (DK).\n\n\n**PostNord Danmark**, **Blue Water Shipping**, **Jørgen Jensen Distribution**, **K. Hansen Transport** and **Per Damgård** supports this to get ADR documentation when **ADR** service is booked.\n\n\n**DB Schenker Sweden** supports this for **System**, **System Premium**, **Full Load** and **Part Load** products.",
+    "description": "\nReturns waybill for a shipment.\n\n\nWaybills are carrier specific and compared to collected waybills these only cover one shipment.\n\n\n**Danske Fragtmænd** supports this when **INCL_WAYBILL** service is booked.\n\n\n**DHL Freight** offers support when either the INCL_WAYBILL/ADR service is booked or when the following products are selected: Parti (SE), Euroline, or Euroline Domestic (DK).\n\n\n**PostNord Danmark**, **Blue Water Shipping**, **Jørgen Jensen Distribution**, **K. Hansen Transport** and **Per Damgård** supports this to get ADR documentation when **ADR** service is booked.\n\n\n**DSV Road (SE, DK)** supports this for **DSV System**, **DSV System priority**, **DSV FTL** and **DSV LTL** products.",
     "operationId": "shipment_waybill_get",
     "parameters": [
       {
@@ -5619,6 +5690,1523 @@
   }
 }
 ,
+    "/statistics/shipments": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Shipments statistics",
+      "description": "Aggregated statistics for your captured shipments.\n\nCounts shipments that were captured and have not been refunded or cancelled. Return portal shipments are included; pass return_portal=false to match the scope of GET /shipments exactly.\n\nNote that this differs from the shipment figures in the web app's analytics view, which also counts cancelled shipments.",
+      "operationId": "statistics_shipments_get",
+      "parameters": [
+        {
+          "name": "date_from",
+          "in": "query",
+          "required": true,
+          "description": "Start of the period, inclusive. A bare date such as 2026-07-01 is expanded to the beginning of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_to",
+          "in": "query",
+          "required": true,
+          "description": "End of the period, inclusive. A bare date such as 2026-07-31 is expanded to the end of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_field",
+          "in": "query",
+          "description": "Which timestamp the period applies to. Defaults to created_at.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "created_at"
+            ]
+          }
+        },
+        {
+          "name": "time_zone",
+          "in": "query",
+          "description": "IANA time zone used to interpret bare dates and to place time series buckets. Defaults to Europe/Copenhagen.",
+          "schema": {
+            "type": "string",
+            "default": "Europe/Copenhagen"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "description": "Adds a time series to the response. Maximum period per interval: hour 7 days, day 366 days, week 732 days, month 732 days.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "week",
+              "month"
+            ]
+          }
+        },
+        {
+          "name": "group_by",
+          "in": "query",
+          "description": "Comma separated list of at most 2 dimensions. The second dimension is nested inside the first.",
+          "schema": {
+            "type": "string"
+          },
+          "examples": {
+            "carrier_code": {
+              "value": "carrier_code"
+            },
+            "product_code": {
+              "value": "carrier_code,product_code"
+            }
+          }
+        },
+        {
+          "name": "metrics",
+          "in": "query",
+          "description": "Comma separated list of metrics. Defaults to count.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of buckets per group level. Some high cardinality dimensions cap this lower.",
+          "schema": {
+            "type": "integer",
+            "default": 25,
+            "maximum": 100
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "description": "Bucket ordering. Prefix with - for descending. Accepts key or any metric.",
+          "schema": {
+            "type": "string",
+            "default": "-count"
+          }
+        },
+        {
+          "name": "series_per_group",
+          "in": "query",
+          "description": "Place a time series inside every group as well as at the top level, answering questions like shipments per carrier per day in one request. Requires both interval and group_by, and is not available when the innermost dimension groups line level documents, which carry no timestamp of their own. Multiplies the number of buckets, so it counts heavily against the request limits.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "include_empty_buckets",
+          "in": "query",
+          "description": "Zero fill the time series across the whole period. Off by default, so periods with no data are omitted.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "carrier_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "product_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "shipping_product_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "receiver_country",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "sender_country",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "receiver_zipcode",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "carrier_customer_number",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "source_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "imported",
+              "fulfillment",
+              "return",
+              "repurchase",
+              "api",
+              "address_book"
+            ]
+          }
+        },
+        {
+          "name": "monitor_state",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "NEUTRAL",
+              "PROGRESSING",
+              "WARNING",
+              "DANGER",
+              "SUCCESS"
+            ]
+          }
+        },
+        {
+          "name": "ta",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "return_portal",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "created_by_user_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "receiver_city",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "sender_zipcode",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "sender_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsResult"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        },
+        "422": {
+          "description": "The request was rejected before it reached Elasticsearch. The error_code field identifies the reason, for example date_range_too_large or bucket_budget_exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "The query timed out. Narrow the period, reduce group_by, or lower limit.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  },
+  "/statistics/sales_orders": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Sales orders statistics",
+      "description": "Aggregated statistics for your sales orders.\n\nMonetary amounts are always expressed in the order's own currency and are never converted. If you request a money metric without restricting or grouping by currency_code, the response is grouped by currency automatically and meta.currency_split is true.",
+      "operationId": "statistics_sales_orders_get",
+      "parameters": [
+        {
+          "name": "date_from",
+          "in": "query",
+          "required": true,
+          "description": "Start of the period, inclusive. A bare date such as 2026-07-01 is expanded to the beginning of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_to",
+          "in": "query",
+          "required": true,
+          "description": "End of the period, inclusive. A bare date such as 2026-07-31 is expanded to the end of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_field",
+          "in": "query",
+          "description": "Which timestamp the period applies to. Defaults to ordered_at.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "ordered_at",
+              "created_at",
+              "updated_at",
+              "closed_at"
+            ]
+          }
+        },
+        {
+          "name": "time_zone",
+          "in": "query",
+          "description": "IANA time zone used to interpret bare dates and to place time series buckets. Defaults to Europe/Copenhagen.",
+          "schema": {
+            "type": "string",
+            "default": "Europe/Copenhagen"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "description": "Adds a time series to the response. Maximum period per interval: hour 7 days, day 366 days, week 732 days, month 732 days.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "week",
+              "month"
+            ]
+          }
+        },
+        {
+          "name": "group_by",
+          "in": "query",
+          "description": "Comma separated list of at most 2 dimensions. The second dimension is nested inside the first.",
+          "schema": {
+            "type": "string"
+          },
+          "examples": {
+            "customer_id": {
+              "value": "customer_id"
+            },
+            "currency_code": {
+              "value": "customer_id,currency_code"
+            }
+          }
+        },
+        {
+          "name": "metrics",
+          "in": "query",
+          "description": "Comma separated list of metrics. Defaults to count.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of buckets per group level. Some high cardinality dimensions cap this lower.",
+          "schema": {
+            "type": "integer",
+            "default": 25,
+            "maximum": 100
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "description": "Bucket ordering. Prefix with - for descending. Accepts key or any metric.",
+          "schema": {
+            "type": "string",
+            "default": "-count"
+          }
+        },
+        {
+          "name": "series_per_group",
+          "in": "query",
+          "description": "Place a time series inside every group as well as at the top level, answering questions like shipments per carrier per day in one request. Requires both interval and group_by, and is not available when the innermost dimension groups line level documents, which carry no timestamp of their own. Multiplies the number of buckets, so it counts heavily against the request limits.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "include_empty_buckets",
+          "in": "query",
+          "description": "Zero fill the time series across the whole period. Off by default, so periods with no data are omitted.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "customer_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "currency_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "ship_to_country_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "bill_to_country_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "shipment_method_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "shipment_method_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "payment_method_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "payment_method_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "source_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "shop_integration_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "source_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "point_of_sale",
+              "subscription"
+            ]
+          }
+        },
+        {
+          "name": "tags",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "item_locations",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "order_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "open",
+              "processing",
+              "packed",
+              "cancelled",
+              "on_hold",
+              "sent",
+              "picked_up",
+              "archived",
+              "ready_for_pickup",
+              "released"
+            ]
+          }
+        },
+        {
+          "name": "payment_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "authorized",
+              "partially_paid",
+              "paid",
+              "voided",
+              "authorize_pending",
+              "authorize_error",
+              "refunded",
+              "marked_as_paid",
+              "partially_refunded",
+              "authorize_expired"
+            ]
+          }
+        },
+        {
+          "name": "fulfillment_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "unfulfilled",
+              "partially_fulfilled",
+              "fulfilled"
+            ]
+          }
+        },
+        {
+          "name": "return_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "in_progress",
+              "partially_in_progress",
+              "returned",
+              "partially_returned"
+            ]
+          }
+        },
+        {
+          "name": "accounting_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "invoice_unprocessed",
+              "invoice_processing",
+              "invoice_drafted",
+              "invoice_booked",
+              "invoice_failed",
+              "invoice_cancelled"
+            ]
+          }
+        },
+        {
+          "name": "invoice_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "order_invoice_created",
+              "order_invoice_partly_booked",
+              "order_invoice_booked",
+              "order_invoice_failed"
+            ]
+          }
+        },
+        {
+          "name": "archived",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "returning_customer",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "assigned_staff_account_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "address_validation_state",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "danger",
+              "warning",
+              "success",
+              "failed",
+              "started",
+              "defunct"
+            ]
+          }
+        },
+        {
+          "name": "ship_to_zipcode",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "ship_to_city",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "service_point_country_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsResult"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        },
+        "422": {
+          "description": "The request was rejected before it reached Elasticsearch. The error_code field identifies the reason, for example date_range_too_large or bucket_budget_exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "The query timed out. Narrow the period, reduce group_by, or lower limit.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  },
+  "/statistics/sales_order_lines": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Sales order lines statistics",
+      "description": "Aggregated statistics for the item lines of your sales orders, grouped by product.\n\nThis is the correct endpoint for per SKU figures. It covers the same orders as /statistics/sales_orders, archived ones included, so the two reconcile; pass archived=false to exclude them. Filtering is otherwise limited to shop_integration_id.",
+      "operationId": "statistics_sales_order_lines_get",
+      "parameters": [
+        {
+          "name": "date_from",
+          "in": "query",
+          "required": true,
+          "description": "Start of the period, inclusive. A bare date such as 2026-07-01 is expanded to the beginning of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_to",
+          "in": "query",
+          "required": true,
+          "description": "End of the period, inclusive. A bare date such as 2026-07-31 is expanded to the end of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_field",
+          "in": "query",
+          "description": "Which timestamp the period applies to. Defaults to ordered_at.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "ordered_at"
+            ]
+          }
+        },
+        {
+          "name": "time_zone",
+          "in": "query",
+          "description": "IANA time zone used to interpret bare dates and to place time series buckets. Defaults to Europe/Copenhagen.",
+          "schema": {
+            "type": "string",
+            "default": "Europe/Copenhagen"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "description": "Adds a time series to the response. Maximum period per interval: hour 7 days, day 366 days, week 732 days, month 732 days.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "week",
+              "month"
+            ]
+          }
+        },
+        {
+          "name": "group_by",
+          "in": "query",
+          "description": "Comma separated list of at most 2 dimensions. The second dimension is nested inside the first.",
+          "schema": {
+            "type": "string"
+          },
+          "examples": {
+            "item_sku": {
+              "value": "item_sku"
+            },
+            "item_id": {
+              "value": "item_sku,item_id"
+            }
+          }
+        },
+        {
+          "name": "metrics",
+          "in": "query",
+          "description": "Comma separated list of metrics. Defaults to quantity_sum.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of buckets per group level. Some high cardinality dimensions cap this lower.",
+          "schema": {
+            "type": "integer",
+            "default": 25,
+            "maximum": 100
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "description": "Bucket ordering. Prefix with - for descending. Accepts key or any metric.",
+          "schema": {
+            "type": "string",
+            "default": "-count"
+          }
+        },
+        {
+          "name": "series_per_group",
+          "in": "query",
+          "description": "Place a time series inside every group as well as at the top level, answering questions like shipments per carrier per day in one request. Requires both interval and group_by, and is not available when the innermost dimension groups line level documents, which carry no timestamp of their own. Multiplies the number of buckets, so it counts heavily against the request limits.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "include_empty_buckets",
+          "in": "query",
+          "description": "Zero fill the time series across the whole period. Off by default, so periods with no data are omitted.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "shop_integration_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "archived",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "item_sku",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "item_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "item_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsResult"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        },
+        "422": {
+          "description": "The request was rejected before it reached Elasticsearch. The error_code field identifies the reason, for example date_range_too_large or bucket_budget_exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "The query timed out. Narrow the period, reduce group_by, or lower limit.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  },
+  "/statistics/fulfillments": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Fulfillments statistics",
+      "description": "Aggregated statistics for your fulfillments, including per product and per return reason figures.\n\nNo filter is applied by default, so cancelled fulfillments and returns are included unless you exclude them.",
+      "operationId": "statistics_fulfillments_get",
+      "parameters": [
+        {
+          "name": "date_from",
+          "in": "query",
+          "required": true,
+          "description": "Start of the period, inclusive. A bare date such as 2026-07-01 is expanded to the beginning of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_to",
+          "in": "query",
+          "required": true,
+          "description": "End of the period, inclusive. A bare date such as 2026-07-31 is expanded to the end of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_field",
+          "in": "query",
+          "description": "Which timestamp the period applies to. Defaults to created_at.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "updated_at",
+              "confirmed_at"
+            ]
+          }
+        },
+        {
+          "name": "time_zone",
+          "in": "query",
+          "description": "IANA time zone used to interpret bare dates and to place time series buckets. Defaults to Europe/Copenhagen.",
+          "schema": {
+            "type": "string",
+            "default": "Europe/Copenhagen"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "description": "Adds a time series to the response. Maximum period per interval: hour 7 days, day 366 days, week 732 days, month 732 days.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "week",
+              "month"
+            ]
+          }
+        },
+        {
+          "name": "group_by",
+          "in": "query",
+          "description": "Comma separated list of at most 2 dimensions. The second dimension is nested inside the first.",
+          "schema": {
+            "type": "string"
+          },
+          "examples": {
+            "fulfillment_type": {
+              "value": "fulfillment_type"
+            },
+            "fulfillment_status": {
+              "value": "fulfillment_type,fulfillment_status"
+            }
+          }
+        },
+        {
+          "name": "metrics",
+          "in": "query",
+          "description": "Comma separated list of metrics. Defaults to count.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of buckets per group level. Some high cardinality dimensions cap this lower.",
+          "schema": {
+            "type": "integer",
+            "default": 25,
+            "maximum": 100
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "description": "Bucket ordering. Prefix with - for descending. Accepts key or any metric.",
+          "schema": {
+            "type": "string",
+            "default": "-count"
+          }
+        },
+        {
+          "name": "series_per_group",
+          "in": "query",
+          "description": "Place a time series inside every group as well as at the top level, answering questions like shipments per carrier per day in one request. Requires both interval and group_by, and is not available when the innermost dimension groups line level documents, which carry no timestamp of their own. Multiplies the number of buckets, so it counts heavily against the request limits.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "include_empty_buckets",
+          "in": "query",
+          "description": "Zero fill the time series across the whole period. Off by default, so periods with no data are omitted.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "fulfillment_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound",
+              "return"
+            ]
+          }
+        },
+        {
+          "name": "fulfillment_status",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "shipping_in_progress",
+              "shipped",
+              "return_in_progress",
+              "returned",
+              "cancelled",
+              "ready_for_pickup",
+              "picked_up"
+            ]
+          }
+        },
+        {
+          "name": "creation_source",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "api",
+              "pick_path",
+              "barcode",
+              "shipping_method",
+              "shop_integration",
+              "return_portal",
+              "mass_action",
+              "pack"
+            ]
+          }
+        },
+        {
+          "name": "source_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "user",
+              "shipping_method",
+              "shop_integration"
+            ]
+          }
+        },
+        {
+          "name": "shop_integration_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "return_portal_id",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "externally_fulfilled",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "return_portal_processed",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "cancelled",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "return_method_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "return_resolution_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "item_name",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsResult"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        },
+        "422": {
+          "description": "The request was rejected before it reached Elasticsearch. The error_code field identifies the reason, for example date_range_too_large or bucket_budget_exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "The query timed out. Narrow the period, reduce group_by, or lower limit.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  },
+  "/statistics/invoices": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Invoices statistics",
+      "description": "Aggregated statistics for the invoices and credit notes Shipmondo has issued to you -- your own spend with the platform.\n\nThis is the only statistics resource carrying net, VAT and gross amounts. Only closed documents are included (return-portal documents issued to an end consumer are excluded), so this answers what you have been billed, not what you are currently accruing. Monetary amounts are always expressed in the document's own currency and are never converted; requesting a money metric without restricting or grouping by currency_code groups the response by currency automatically and sets meta.currency_split to true.\n\nMoney metrics are marked approximate: see meta.approximate_metrics -- they are aggregated in 32-bit floating point and can differ from the exact decimal figures returned by other endpoints for the same underlying records.",
+      "operationId": "statistics_invoices_get",
+      "parameters": [
+        {
+          "name": "date_from",
+          "in": "query",
+          "required": true,
+          "description": "Start of the period, inclusive. A bare date such as 2026-07-01 is expanded to the beginning of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_to",
+          "in": "query",
+          "required": true,
+          "description": "End of the period, inclusive. A bare date such as 2026-07-31 is expanded to the end of that day in the requested time zone.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date_field",
+          "in": "query",
+          "description": "Which timestamp the period applies to. Defaults to created_at.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "updated_at"
+            ]
+          }
+        },
+        {
+          "name": "time_zone",
+          "in": "query",
+          "description": "IANA time zone used to interpret bare dates and to place time series buckets. Defaults to Europe/Copenhagen.",
+          "schema": {
+            "type": "string",
+            "default": "Europe/Copenhagen"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "description": "Adds a time series to the response. Maximum period per interval: hour 7 days, day 366 days, week 732 days, month 732 days.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day",
+              "week",
+              "month"
+            ]
+          }
+        },
+        {
+          "name": "group_by",
+          "in": "query",
+          "description": "Comma separated list of at most 2 dimensions. The second dimension is nested inside the first.",
+          "schema": {
+            "type": "string"
+          },
+          "examples": {
+            "reference_type": {
+              "value": "reference_type"
+            },
+            "document_type": {
+              "value": "reference_type,document_type"
+            }
+          }
+        },
+        {
+          "name": "metrics",
+          "in": "query",
+          "description": "Comma separated list of metrics. Defaults to count.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of buckets per group level. Some high cardinality dimensions cap this lower.",
+          "schema": {
+            "type": "integer",
+            "default": 25,
+            "maximum": 100
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "description": "Bucket ordering. Prefix with - for descending. Accepts key or any metric.",
+          "schema": {
+            "type": "string",
+            "default": "-count"
+          }
+        },
+        {
+          "name": "series_per_group",
+          "in": "query",
+          "description": "Place a time series inside every group as well as at the top level, answering questions like shipments per carrier per day in one request. Requires both interval and group_by, and is not available when the innermost dimension groups line level documents, which carry no timestamp of their own. Multiplies the number of buckets, so it counts heavily against the request limits.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "include_empty_buckets",
+          "in": "query",
+          "description": "Zero fill the time series across the whole period. Off by default, so periods with no data are omitted.",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "reference_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "shipment",
+              "payment_request",
+              "payment_requests",
+              "generic_payment",
+              "generic_payments",
+              "sales_header",
+              "subscription_period",
+              "shipment_case"
+            ]
+          }
+        },
+        {
+          "name": "document_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "invoice",
+              "credit_note"
+            ]
+          }
+        },
+        {
+          "name": "currency_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "vat_business_type",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "business",
+              "private_person"
+            ]
+          }
+        },
+        {
+          "name": "bill_to_country_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "vat_percent",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "local_currency_code",
+          "in": "query",
+          "description": "Restrict the period to matching records. Accepts a comma separated list.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsResult"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        },
+        "422": {
+          "description": "The request was rejected before it reached Elasticsearch. The error_code field identifies the reason, for example date_range_too_large or bucket_budget_exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "The query timed out. Narrow the period, reduce group_by, or lower limit.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsError"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  },
+  "/statistics/metadata": {
+    "get": {
+      "tags": [
+        "Statistics"
+      ],
+      "summary": "Available statistics dimensions and metrics",
+      "description": "Lists every statistics resource with the dimensions, metrics and filters it accepts, plus the request limits. Use it to discover what can be grouped and measured without hardcoding the lists.",
+      "operationId": "statistics_metadata_get",
+      "responses": {
+        "200": {
+          "description": "Successful.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/Unauthorized"
+        }
+      },
+      "security": [
+        {
+          "basicAuth": []
+        }
+      ]
+    }
+  }
+,
     "/setups/carriers": {
   "get": {
     "tags": [
@@ -5682,6 +7270,160 @@
     ]
   }
 },
+    
+"/user_ledger_entries": {
+   "get": {
+      "tags": [
+         "UserLedgerEntries"
+      ],
+      "summary": "List balance movements",
+      "description": "Returns the individual entries behind your account balance: refills, payments, and label/subscription charges, each with the running balance immediately after it -- your account statement.\n\nReads directly from the account's own records, so a just-booked entry appears immediately.\n\nTwo ways to page through results: page/per_page for browsing a bounded range, or before_id for walking a large account's full history -- see the before_id parameter below.",
+      "operationId": "user_ledger_entries_get",
+      "parameters": [
+         {
+            "name": "created_at_min",
+            "in": "query",
+            "description": "\"From\" timestamp for the entries to be included in the filter. Examples:\n* 2017-06-19T11:00:03.305+02:00\n* 2017-06-19 will be transformed into 2017-06-19T00:00:00.000+02:00\n\nDate filters are intended for recent periods. A narrow window far in the past is slow to query on a large account regardless of how few rows it matches; walking a long history should use before_id instead of a date range.",
+            "schema": {
+               "type": "string",
+               "format": "date-time"
+            }
+         },
+         {
+            "name": "created_at_max",
+            "in": "query",
+            "description": "\"To\" timestamp for the entries to be included in the filter. Examples:\n* 2017-06-29T11:00:03.305+02:00\n* 2017-06-29 will be transformed into 2017-06-29T00:00:00.000+02:00\n\nSame caveat as created_at_min: prefer before_id over a narrow historical date range on a large account.",
+            "schema": {
+               "type": "string",
+               "format": "date-time"
+            }
+         },
+         {
+            "name": "reference_type",
+            "in": "query",
+            "description": "Restrict to entries relating to this kind of record.",
+            "schema": {
+               "type": "string",
+               "enum": ["shipment", "payment_request", "payment_requests", "generic_payment", "generic_payments", "sales_header", "subscription_period", "shipment_case"]
+            }
+         },
+         {
+            "name": "source_type",
+            "in": "query",
+            "description": "Restrict to charges (sales_document) or refills/payments (transaction).",
+            "schema": {
+               "type": "string",
+               "enum": ["sales_document", "transaction"]
+            }
+         },
+         {
+            "name": "settlement_id",
+            "in": "query",
+            "description": "Restrict to the entry settling this entry ID.",
+            "schema": {
+               "type": "integer"
+            }
+         },
+         {
+            "name": "per_page",
+            "in": "query",
+            "description": "For pagination. Defines how many entries are returned per page. Capped at 50 with page, or at 500 when paging with before_id instead.",
+            "schema": {
+               "type": "integer",
+               "default": 25,
+               "minimum": 1,
+               "maximum": 500
+            }
+         },
+         {
+            "name": "page",
+            "in": "query",
+            "description": "For pagination. Defines which page the results are fetched from. Ignored when before_id is present.",
+            "schema": {
+               "type": "integer",
+               "default": 1
+            }
+         },
+         {
+            "name": "before_id",
+            "in": "query",
+            "description": "Returns entries with an id lower than this one, most recent first -- cursor pagination. Takes precedence over page when both are given. Unlike page/per_page, cost is constant regardless of how deep into an account's history you page, since it filters by id directly instead of skipping and discarding rows. Use this to walk a large account's full history; use page/per_page to browse a bounded, recent range. The response's X-Next-Before-Id header, present whenever a full page was returned, is the value to pass for the next page.",
+            "schema": {
+               "type": "integer"
+            }
+         }
+      ],
+      "responses": {
+         "200": {
+            "description": "Successful.",
+            "headers": {
+               "X-Current-Page": {
+                  "description": "Pagination - Current Page. Absent when paging with before_id, which has no page number.",
+                  "schema": {
+                     "type": "integer"
+                  }
+               },
+               "X-Per-Page": {
+                  "description": "Pagination - Per Page.",
+                  "schema": {
+                     "type": "integer"
+                  }
+               },
+               "X-Total-Count": {
+                  "description": "Pagination - Total Count.",
+                  "schema": {
+                     "type": "integer"
+                  }
+               },
+               "X-Total-Pages": {
+                  "description": "Pagination - Total Pages Count. Absent when paging with before_id, which has no page number.",
+                  "schema": {
+                     "type": "integer"
+                  }
+               },
+               "X-Next-Before-Id": {
+                  "description": "The before_id to request the next page with, when paging with before_id. Present only when a full page was returned -- its absence means there are no more entries.",
+                  "schema": {
+                     "type": "integer"
+                  }
+               }
+            },
+            "content": {
+               "application/json": {
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "$ref": "#/components/schemas/UserLedgerEntry"
+                     }
+                  }
+               }
+            }
+         },
+         "401": {
+            "$ref": "#/components/responses/Unauthorized"
+         },
+         "422": {
+            "description": "A filter value could not be parsed.",
+            "content": {
+               "application/json": {
+                  "schema": {
+                     "type": "object",
+                     "properties": {
+                        "error": { "type": "string" }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "security": [
+         {
+            "basicAuth": []
+         }
+      ]
+   }
+}
+,
     "/webhooks": {
    "get": {
       "tags": [
@@ -7131,11 +8873,13 @@
       },
       "left_text": {
         "type": "string",
-        "example": "ABC"
+        "example": "ABC",
+        "description": "Text printed to the left of the barcode. Only the first 3 characters are printed on the label."
       },
       "right_text": {
         "type": "string",
-        "example": "DEF"
+        "example": "DEF",
+        "description": "Text printed to the right of the barcode. Only the first 3 characters are printed on the label."
       }
     },
     "nullable": true
@@ -8495,6 +10239,29 @@
             "description": "Delivery instruction to the carrier. Only applicable for products which support delivery instructions."
           }
         }
+      },
+      "documents": {
+        "type": "array",
+        "description": "Documents uploaded with the shipment. Labels and documents generated by Shipmondo or the carrier are not included.",
+        "items": {
+          "$ref": "#/components/schemas/ShipmentDocument"
+        }
+      }
+    }
+  },
+  "ShipmentDocument": {
+    "type": "object",
+    "properties": {
+      "document_type": {
+        "type": "string",
+        "description": "Type of the document.",
+        "example": "other",
+        "enum": ["other","proforma_invoice","commercial_invoice","cn_22","cn_23","consignment_note","bill_of_lading","auth_form","certificate_of_origin","export_accompanying_document","export_license","import_permit","one_time_usmca","power_of_attorney","packing_list","sed_document","shippers_letter_of_instruction","declaration","nafta_certificate_of_origin","air_waybill","invoice","customs_declaration"]
+      },
+      "file_name": {
+        "type": "string",
+        "description": "File name of the uploaded document.",
+        "example": "commercial_invoice.pdf"
       }
     }
   },
@@ -9242,6 +11009,11 @@
           "SP",
           "BOX"
         ]
+      },
+      "country_code": {
+        "type": "string",
+        "example": "DK",
+        "description": "The country code the shipping method applies to."
       }
     }
   },
@@ -9553,7 +11325,7 @@
           "compact_pdf",
           "compact_zpl"
         ],
-        "description": "The given format of the print job. Label_formats: compact_pdf and compact_zpl, is only compatible with document_type: shipment."
+        "description": "The given format of the print job. Label_formats: compact_pdf and compact_zpl, is only compatible with document_type: shipment. Customs documents (document_type: proforma) are always rendered in A4, so label_format is ignored for them."
       }
     }
   },
@@ -9613,7 +11385,7 @@
                 "compact_pdf",
                 "compact_zpl"
               ],
-              "description": "The given format of the print job. Label_formats: compact_pdf and compact_zpl, is only compatible with document_type: shipment."
+              "description": "The given format of the print job. Label_formats: compact_pdf and compact_zpl, is only compatible with document_type: shipment. Customs documents (document_type: proforma) are always rendered in A4, so label_format is ignored for them."
             }
           }
         }
@@ -10290,11 +12062,7 @@
     }
   },
   "CreateFulfillmentRequest": {
-    "required": [
-      "fulfillment_lines",
-      "order_line_id",
-      "shipped_quantity"
-    ],
+    "required": ["fulfillment_lines"],
     "type": "object",
     "properties": {
       "fulfilled_by_third_party": {
@@ -10984,7 +12752,7 @@
       "order_status": {
         "type": "string",
         "example": "open",
-        "description": "The status of the order in Shipmondo. Possible values: open, cancelled, on-hold"
+        "description": "The status of the order in Shipmondo. Possible values: open, cancelled, on_hold"
       },
       "enable_customs": {
         "type": "boolean",
@@ -11047,7 +12815,7 @@
         "example": "item",
         "description": "Specifies the type of line.",
         "enum":
-        ["item","shipping","discount","gift_card","payment_fee"]
+        ["item","shipping","discount","gift_card","payment_fee","duty"]
       },
       "item_sku": {
         "type": "string",
@@ -11178,7 +12946,7 @@
         "example": "item",
         "description": "Specifies the type of line.",
         "enum":
-        ["item","shipping","discount","gift_card","payment_fee"]
+        ["item","shipping","discount","gift_card","payment_fee","duty"]
       },
       "item_name": {
         "type": "string",
@@ -11403,7 +13171,7 @@
         "example": "quick_pay",
         "description": "Specific code of the gateway used to refer to the provider.",
         "enum":
-        ["epay","quick_pay","stripe","yourpay","penso_pay","dibs","on_pay","reepay","klarna","shopify_payments","paypal","dibs_easy","paylike","bambora_checkout","anyday","freepay","swiipe","shipmondo_payments","vipps","dummy_payment_gateway","pensopay","epay_v2"]
+        ["epay","quick_pay","stripe","yourpay","penso_pay","dibs","on_pay","reepay","klarna","shopify_payments","paypal","dibs_easy","paylike","bambora_checkout","anyday","freepay","swiipe","shipmondo_payments","vipps","dummy_payment_gateway","pensopay","epay_v2","kustom"]
       },
       "merchant_number": {
         "type": "string",
@@ -11606,8 +13374,9 @@
       },
       "invoice_base64": {
         "type": "string",
-        "description": "Base64-encoded string of invoice as PDF",
-        "example": "..."
+        "description": "Base64-encoded string of invoice as PDF. Null if the bulk waybill needs no invoice.",
+        "example": "...",
+        "nullable": true
       },
       "base64": {
         "type": "string",
@@ -12492,7 +14261,7 @@
       "tunnel_restriction_code": {
         "type": "string",
         "description": "Tunnel restriction code that applies to the dangerous goods.",
-        "example": "A"
+        "example": "(D/E)"
       },
       "packing_group": {
         "type": "string",
@@ -12529,8 +14298,9 @@
     "properties": {
       "id": {
         "type": "number",
-        "description": "The identifier for the staff account.",
-        "example": 27
+        "description": "The identifier for the staff account. Null while the staff account is invited and the invite has not been accepted yet.",
+        "example": 27,
+        "nullable": true
       },
       "name": {
         "type": "string",
@@ -12539,8 +14309,18 @@
       },
       "email": {
         "type": "string",
-        "description": "The e-mail of the account.",
-        "example": "info@minvirksomhed.dk"
+        "description": "The e-mail of the account. For an invited staff account, the e-mail the invite was sent to.",
+        "example": "info@minvirksomhed.dk",
+        "nullable": true
+      },
+      "status": {
+        "type": "string",
+        "description": "The status of the staff account.",
+        "example": "active",
+        "enum": [
+          "invited",
+          "active"
+        ]
       },
       "permissions": {
         "description": "A list of permissions the user has for the app",
@@ -13038,6 +14818,12 @@
         "description": "City of the address.",
         "example": "Odense SØ"
       },
+      "state": {
+        "type": "string",
+        "description": "State or province of the address. Required by some carriers for countries such as US, CA and IE.",
+        "example": "NY",
+        "nullable": true
+      },
       "country_code": {
         "type": "string",
         "description": "Country code of the address in ISO3166 alpha-2 format.",
@@ -13487,7 +15273,7 @@
       "tunnel_restriction_code": {
         "type": "string",
         "description": "Tunnel restriction code that applies to the dangerous goods.",
-        "example": "A"
+        "example": "(D/E)"
       },
       "packing_group": {
         "type": "string",
@@ -13587,6 +15373,192 @@
         "type": "string",
         "description": "The signed identifier for the document, which can be obtained from the [upload document](https://shipmondo.dev/api-reference/#/operations/document_upload_post) endpoint.",
         "example": "eyJf(...)"
+      }
+    }
+  },
+  "StatisticsError": {
+    "type": "object",
+    "properties": {
+      "error": {
+        "type": "string",
+        "description": "Human readable explanation of what was wrong with the request.",
+        "example": "The requested range spans 900 days; the maximum is 732."
+      },
+      "error_code": {
+        "type": "string",
+        "description": "Stable machine readable reason, so clients can branch without matching on the message.",
+        "example": "date_range_too_large",
+        "enum": [
+          "unknown_resource",
+          "missing_parameter",
+          "invalid_parameter",
+          "unknown_dimension",
+          "unknown_metric",
+          "unknown_filter",
+          "date_range_too_large",
+          "too_many_dimensions",
+          "bucket_budget_exceeded",
+          "query_timed_out"
+        ]
+      }
+    }
+  },
+  "StatisticsGroup": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "type": "string",
+        "description": "The grouped value. Enum dimensions return the name rather than an internal number, and boolean dimensions return \"true\" or \"false\", so the key can always be fed back into the matching filter. Two reserved keys can appear: \"unknown\" for records where the dimension is empty, and \"other\" for everything beyond the requested limit. In the \"other\" row a metric is null when its residual cannot be derived from the aggregation.",
+        "example": "gls"
+      },
+      "label": {
+        "type": "string",
+        "nullable": true,
+        "description": "Human readable name for the key where one exists, for example a country or customer name. Null when there is nothing to resolve.",
+        "example": "GLS"
+      },
+      "metrics": {
+        "type": "object",
+        "description": "The requested metrics for this group. Values are numbers, or null where a metric cannot be computed.",
+        "additionalProperties": { "type": "number", "nullable": true }
+      },
+      "groups": {
+        "type": "array",
+        "description": "Present when a second group_by dimension was requested.",
+        "items": { "$ref": "#/components/schemas/StatisticsGroup" }
+      },
+      "series": {
+        "type": "array",
+        "description": "Present on the innermost group when series_per_group was requested. Same shape as the top level series.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": { "type": "string", "example": "2026-07-01" },
+            "metrics": { "type": "object", "additionalProperties": { "type": "number", "nullable": true } }
+          }
+        }
+      }
+    }
+  },
+  "StatisticsResult": {
+    "type": "object",
+    "properties": {
+      "meta": {
+        "type": "object",
+        "description": "The request as it was resolved, including any defaults that were applied.",
+        "properties": {
+          "resource": { "type": "string", "example": "shipments" },
+          "date_field": { "type": "string", "example": "created_at" },
+          "date_from": { "type": "string", "format": "date-time" },
+          "date_to": { "type": "string", "format": "date-time" },
+          "time_zone": { "type": "string", "example": "Europe/Copenhagen" },
+          "interval": { "type": "string", "nullable": true, "example": "day" },
+          "group_by": { "type": "array", "items": { "type": "string" } },
+          "metrics": { "type": "array", "items": { "type": "string" } },
+          "limit": { "type": "integer", "example": 25 },
+          "sort": {
+            "type": "string",
+            "description": "The ordering that was actually applied, in the same form the sort parameter takes.",
+            "example": "-count"
+          },
+          "include_empty_buckets": { "type": "boolean" },
+          "series_per_group": { "type": "boolean" },
+          "approximate_metrics": {
+            "type": "array",
+            "description": "Metrics in this response that are estimates rather than exact counts.",
+            "items": { "type": "string" }
+          },
+          "currency_split": {
+            "type": "boolean",
+            "description": "True when the response was grouped by currency automatically because a monetary metric was requested without a single currency scope."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True when at least one group level had more distinct values than the requested limit. The remainder is reported in the \"other\" bucket."
+          }
+        }
+      },
+      "totals": {
+        "type": "object",
+        "description": "The requested metrics across the whole period, before any grouping.",
+        "additionalProperties": { "type": "number", "nullable": true }
+      },
+      "series": {
+        "type": "array",
+        "description": "Present when interval was requested.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": { "type": "string", "example": "2026-07-01" },
+            "metrics": { "type": "object", "additionalProperties": { "type": "number", "nullable": true } }
+          }
+        }
+      },
+      "groups": {
+        "type": "array",
+        "description": "Present when group_by was requested.",
+        "items": { "$ref": "#/components/schemas/StatisticsGroup" }
+      }
+    }
+  },
+  "UserLedgerEntry": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 8172345,
+        "description": "Unique identifier of the object."
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "description": "When the entry was booked."
+      },
+      "amount": {
+        "type": "string",
+        "nullable": true,
+        "example": "-49.00",
+        "description": "Signed movement in the account's own currency. Positive for a refill or payment, negative for a charge."
+      },
+      "currency_code": {
+        "type": "string",
+        "nullable": true,
+        "example": "DKK",
+        "description": "ISO 4217 currency code."
+      },
+      "balance": {
+        "type": "string",
+        "nullable": true,
+        "example": "451.00",
+        "description": "The account's running balance immediately after this entry."
+      },
+      "description": {
+        "type": "string",
+        "nullable": true,
+        "example": "Shipment #123456",
+        "description": "Human readable description of the entry, in the account's own language."
+      },
+      "reference_type": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["shipment", "payment_request", "payment_requests", "generic_payment", "generic_payments", "sales_header", "subscription_period", "shipment_case"],
+        "description": "What the entry relates to. Null when the entry has no reference."
+      },
+      "reference_id": {
+        "type": "integer",
+        "nullable": true,
+        "description": "ID of the record named by reference_type, in that record's own resource."
+      },
+      "source_type": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["sales_document", "transaction"],
+        "description": "Whether the entry is a charge (sales_document) or a refill/payment (transaction). Null for an entry with no source record."
+      },
+      "settlement_id": {
+        "type": "integer",
+        "nullable": true,
+        "description": "ID of the entry this one settles, when applicable. Null for most entries."
       }
     }
   }

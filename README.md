@@ -47,11 +47,11 @@ To target the sandbox instead of production, set `SHIPMONDO_BASE_URL="https://sa
 
 The CLI's command surface is driven by the Shipmondo OpenAPI spec:
 
-* **First run** downloads the spec from the canonical URL and caches it locally (`~/Library/Caches/shipmondo/openapi.json` on macOS, `~/.cache/shipmondo/openapi.json` on Linux, `%LocalAppData%\shipmondo\openapi.json` on Windows). The download notice goes to stderr, so piped JSON output stays clean.
+* **First run** downloads the live spec from `https://app.shipmondo.com/api/public/v3/openapi.json` and caches it locally (`~/Library/Caches/shipmondo/openapi.json` on macOS, `~/.cache/shipmondo/openapi.json` on Linux, `%LocalAppData%\shipmondo\openapi.json` on Windows). The download notice goes to stderr, so piped JSON output stays clean.
 * **Subsequent runs** use the cached copy — no network call.
 * **`shipmondo reload`** clears the cache and fetches a fresh copy. Run it whenever the API gains new endpoints.
 
-This means the command surface can be updated **without redistributing the binary**: publish a new `openapi.json` and clients pick it up on their next `reload`. If the download ever fails and no cache exists, the CLI falls back to the copy bundled into the binary, so it always works offline. Override the source with `SHIPMONDO_SPEC_URL`.
+This means the command surface follows the API **without redistributing the binary**: when Shipmondo publishes new endpoints, clients pick them up on their next `reload`. If the download ever fails and no cache exists, the CLI falls back to the copy bundled into the binary, so it always works offline. Override the source with `SHIPMONDO_SPEC_URL`.
 
 ---
 
@@ -149,7 +149,7 @@ make build          # host binary → ./shipmondo
 make dist           # cross-compile all platforms → ./dist
 ```
 
-The CLI's entire command surface is generated at runtime from the OpenAPI spec — no code generation step. The `openapi.json` committed here is both the source served at the canonical spec URL and the offline fallback bundled into the binary. **To publish a new API version, commit an updated `openapi.json`**; installed clients pick it up on their next `shipmondo reload`, with no rebuild or redistribution required.
+The CLI's entire command surface is generated at runtime from the OpenAPI spec — no code generation step. Installed clients read the live spec from Shipmondo, so new endpoints need no rebuild or redistribution — just `shipmondo reload`. The `openapi.json` committed here is the offline fallback bundled into the binary; refresh it from the live URL before each release. Binaries older than v1.4.0 still fetch this repo's copy (`raw.githubusercontent.com/shipmondo/shipmondo-cli/main/openapi.json`), so keeping it current also serves them.
 
 ---
 

@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-// specURL is the canonical, always-available location of the OpenAPI spec.
+// specURL is Shipmondo's live OpenAPI spec, published by the API itself.
 // The CLI downloads it on first run, caches it locally, and serves every
 // subsequent run from the cache until `shipmondo reload` is invoked. It can
 // be overridden with SHIPMONDO_SPEC_URL.
-const specURL = "https://raw.githubusercontent.com/shipmondo/shipmondo-cli/main/openapi.json"
+const specURL = "https://app.shipmondo.com/api/public/v3/openapi.json"
 
 func specSourceURL() string {
 	if u := os.Getenv("SHIPMONDO_SPEC_URL"); u != "" {
